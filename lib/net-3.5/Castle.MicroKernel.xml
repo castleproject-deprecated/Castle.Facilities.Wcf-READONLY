@@ -973,16 +973,24 @@
             <param name="context"></param>
             <returns></returns>
         </member>
-        <member name="M:Castle.MicroKernel.Handlers.AbstractHandler.ResolveCore(Castle.MicroKernel.CreationContext)">
+        <member name="M:Castle.MicroKernel.Handlers.AbstractHandler.ResolveCore(Castle.MicroKernel.CreationContext,System.Boolean)">
             <summary>
             Should be implemented by derived classes: 
             returns an instance of the component this handler
             is responsible for
             </summary>
             <param name="context"></param>
+            <param name="track"></param>
             <returns></returns>
         </member>
         <member name="M:Castle.MicroKernel.Handlers.AbstractHandler.Release(System.Object)">
+            <summary>
+             disposes the component instance (or recycle it).
+            </summary>
+            <param name="instance"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Castle.MicroKernel.Handlers.AbstractHandler.ReleaseCore(System.Object)">
             <summary>
             Should be implemented by derived classes: 
             disposes the component instance (or recycle it)
@@ -1136,15 +1144,16 @@
             </summary>
             <param name="model"></param>
         </member>
-        <member name="M:Castle.MicroKernel.Handlers.DefaultHandler.ResolveCore(Castle.MicroKernel.CreationContext)">
+        <member name="M:Castle.MicroKernel.Handlers.DefaultHandler.ResolveCore(Castle.MicroKernel.CreationContext,System.Boolean)">
             <summary>
             Returns an instance of the component this handler
             is responsible for
             </summary>
             <param name="context"></param>
+            <param name="track"></param>
             <returns></returns>
         </member>
-        <member name="M:Castle.MicroKernel.Handlers.DefaultHandler.Release(System.Object)">
+        <member name="M:Castle.MicroKernel.Handlers.DefaultHandler.ReleaseCore(System.Object)">
             <summary>
             disposes the component instance (or recycle it)
             </summary>
@@ -2644,6 +2653,31 @@
             <param name="interceptors">The interceptors.</param>
             <returns></returns>
         </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.Interceptors(System.Type[])">
+            <summary>
+            Set the interceptors for this component.
+            </summary>
+            <param name="interceptors">The interceptors.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.Interceptors``1">
+            <summary>
+            Set the interceptor for this component.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.Interceptors``2">
+            <summary>
+            Set the interceptor for this component.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.Interceptors(System.String[])">
+            <summary>
+            Set the interceptor for this component.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.SelectInterceptorsWith(Castle.Core.Interceptor.IInterceptorSelector)">
             <summary>
             Sets the interceptor selector for this component.
@@ -2683,6 +2717,20 @@
             is created and before it's returned from the container.
             </summary>
             <param name="actions">A set of actions to be executed right after the component is created and before it's returned from the container.</param>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.DynamicParameters(Castle.MicroKernel.Registration.DynamicParametersDelegate)">
+            <summary>
+            Allows custom dependencies to by defined dyncamically.
+            </summary>
+            <param name="resolve">The delegate used for providing dynamic parameters.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.DynamicParameters(Castle.MicroKernel.Registration.DynamicParametersResolveDelegate)">
+            <summary>
+            Allows custom dependencies to by defined dyncamically with releasing capability.
+            </summary>
+            <param name="resolve">The delegate used for providing dynamic parameters.</param>
+            <returns></returns>
         </member>
         <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.ActAs(System.Object[])">
             <summary>
