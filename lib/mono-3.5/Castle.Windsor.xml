@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <doc>
     <assembly>
-        <name>/home/patrick/tcagent/work/7cd50a6714c23d0/build/mono-3.5/release/Castle.Windsor</name>
+        <name>/home/patrick/tcagent/work/d7401da33ab97a27/build/mono-3.5/release/Castle.Windsor</name>
     </assembly>
     <members>
         <member name="T:Castle.Windsor.Adapters.ComponentModel.ContainerAdapter">
