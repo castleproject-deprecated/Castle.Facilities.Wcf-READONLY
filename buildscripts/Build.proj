@@ -198,7 +198,7 @@ limitations under the License.
 	
 
 	<!-- Use TeamCity's when running on the build server -->
-	<UsingTask TaskName="NUnit" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)" Condition=" '$(TEAMCITY_VERSION)' != '' "/>
+	<UsingTask TaskName="NUnitTeamCity" AssemblyFile="$(teamcity_dotnet_nunitlauncher_msbuild_task)" Condition=" '$(TEAMCITY_VERSION)' != '' "/>
 
 	<Target
 		Name="_ExecNUnit"
@@ -207,7 +207,13 @@ limitations under the License.
 			<NUnitTestResultXmlFiles Condition="'$(NUnitTestResultXmlFiles)' == ''">$(TestResultsPath)/nunit-results.xml</NUnitTestResultXmlFiles>
 		</PropertyGroup>
 		
-		<Exec Command="$(NUnitPath)/nunit-console-x86.exe /nologo @(TestAssemblies) /xml=$(NUnitTestResultXmlFiles) /framework=$(FrameworkVersion)" />
+		<Exec Command="$(NUnitPath)/nunit-console-x86.exe /nologo @(TestAssemblies) /xml=$(NUnitTestResultXmlFiles) /framework=$(FrameworkVersion)" Condition=" '$(TEAMCITY_VERSION)' == '' " />
+
+		<NUnitTeamCity
+			Assemblies="@(TestBinaries)"
+			NUnitVersion="NUnit-2.5.5"
+			Condition=" '$(TEAMCITY_VERSION)' != '' "
+		/>
 
 	</Target>
 
