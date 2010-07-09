@@ -206,20 +206,8 @@ limitations under the License.
 		<PropertyGroup>
 			<NUnitTestResultXmlFiles Condition="'$(NUnitTestResultXmlFiles)' == ''">$(TestResultsPath)/nunit-results.xml</NUnitTestResultXmlFiles>
 		</PropertyGroup>
-
-		<NUnit 
-			ToolPath="$(NUnitPath)"
-			Assemblies="@(TestAssemblies)"
-			Platform="x86"
-			OutputXmlFile="$(NUnitTestResultXmlFiles)"
-			ContinueOnError="$(TestRunner_ContinueOnError)"
-			>
-			
-			<Output TaskParameter="ExitCode" PropertyName="NUnitExitCode" />
 		
-		</NUnit>
-		
-		<Error Condition="$(NUnitExitCode) != '0'" Text="NUnit failed $(NUnitExitCode) tests." />
+		<Exec Command="$(NUnitPath)/nunit-console-x86.exe /nologo @(TestAssemblies) /xml=$(NUnitTestResultXmlFiles) /framework=$(FrameworkVersion)" />
 
 	</Target>
 
