@@ -99,7 +99,7 @@ limitations under the License.
 
 	
 	<Target Name="RebuildAll" DependsOnTargets="CleanAll;BuildProject" />
-	<Target Name="ClickToBuild" DependsOnTargets="RebuildAll;_SetPackageDir;_PreparePackage">
+	<Target Name="ClickToBuild" DependsOnTargets="CleanProject;BuildProject;_SetPackageDir;_PreparePackage">
 		<RemoveDir Directories="$(OutputPath)" />
 	</Target>
 
