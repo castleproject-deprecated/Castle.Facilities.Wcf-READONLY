@@ -93,6 +93,7 @@
     <Compile Include="Behaviors\Security\CustomPrincipalAuthorization.cs" />
     <Compile Include="Behaviors\Security\FetchCertificateBySubject.cs" />
     <Compile Include="Behaviors\Security\UserNameCredentials.cs" />
+    <Compile Include="Client\WcfClientModel.generic.cs" />
     <Compile Include="Internal\WcfBurdenExtension.cs" />
     <Compile Include="Behaviors\IWcfChannelExtension.cs" />
     <Compile Include="Behaviors\IWcfEndpointExtension.cs" />

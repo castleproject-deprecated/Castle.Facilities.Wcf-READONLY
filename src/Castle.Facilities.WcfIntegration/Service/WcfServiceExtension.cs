@@ -49,7 +49,7 @@ namespace Castle.Facilities.WcfIntegration.Service
 			                                      }, null
 				);
 
-		private Action _afterInit;
+		private Action afterInit;
 		private AspNetCompatibilityRequirementsMode? aspNetCompat;
 		private TimeSpan? closeTimeout;
 		private Binding defaultBinding;
@@ -112,7 +112,7 @@ namespace Castle.Facilities.WcfIntegration.Service
 
 			if (kernel == null)
 			{
-				_afterInit += () => RegisterServiceHostBuilder(serviceHostBuilder, builder, force);
+				afterInit += () => RegisterServiceHostBuilder(serviceHostBuilder, builder, force);
 			}
 			else
 			{
@@ -133,10 +133,10 @@ namespace Castle.Facilities.WcfIntegration.Service
 			kernel.ComponentRegistered += Kernel_ComponentRegistered;
 			kernel.ComponentUnregistered += Kernel_ComponentUnregistered;
 
-			if (_afterInit != null)
+			if (afterInit != null)
 			{
-				_afterInit();
-				_afterInit = null;
+				afterInit();
+				afterInit = null;
 			}
 		}
 

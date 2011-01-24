@@ -83,17 +83,7 @@ namespace Castle.Facilities.WcfIntegration.Client
 
 			private string GetKey()
 			{
-				string key = null;
-				var argument = arguments[0];
-				if (arguments.Length == 2)
-				{
-					key = (string)argument;
-				}
-				else if (argument is string)
-				{
-					key = (string)argument;
-				}
-				return key;
+				return arguments.First() as string;
 			}
 		}
 	}

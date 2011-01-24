@@ -18,7 +18,6 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using System.Collections.Generic;
 
 	using Castle.Facilities.WcfIntegration.Behaviors;
-	using Castle.Facilities.WcfIntegration.Behaviors.Security;
 	using Castle.Facilities.WcfIntegration.Model;
 
 	public abstract class WcfClientModelBase : IWcfClientModel
@@ -81,39 +80,6 @@ namespace Castle.Facilities.WcfIntegration.Client
 				copy.extensions = new List<IWcfExtension>(extensions);
 			}
 			return copy;
-		}
-	}
-
-	public abstract class WcfClientModel<T> : WcfClientModelBase
-		where T : WcfClientModel<T>
-	{
-		protected WcfClientModel()
-		{
-		}
-
-		protected WcfClientModel(IWcfEndpoint endpoint)
-			: base(endpoint)
-		{
-		}
-
-		public T AddExtensions(params object[] extensions)
-		{
-			foreach (var extension in extensions)
-			{
-				Extensions.Add(WcfExplicitExtension.CreateFrom(extension));
-			}
-			return (T)this;
-		}
-
-		public T Credentials(AbstractCredentials credentials)
-		{
-			return AddExtensions(credentials);
-		}
-
-		public T WithoutAsyncCapability()
-		{
-			wantsAsync = false;
-			return (T)this;
 		}
 	}
 }
