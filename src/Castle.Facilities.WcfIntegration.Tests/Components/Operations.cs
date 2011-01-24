@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,12 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-using System.Threading;
 
 namespace Castle.Facilities.WcfIntegration.Tests
 {
 	using System;
 	using System.Collections.Generic;
+	using System.Threading;
+
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 
 	public class Operations : IOperationsEx
@@ -27,8 +28,6 @@ namespace Castle.Facilities.WcfIntegration.Tests
 		{
 			this.number = number;
 		}
-
-		#region IOperations Members
 
 		public int GetValueFromConstructor()
 		{
@@ -54,10 +53,6 @@ namespace Castle.Facilities.WcfIntegration.Tests
 			return UnitOfWork.initialized;
 		}
 
-		#endregion
-
-		#region IOperationsEx Members
-
 		public void Backup(IDictionary<string, object> context)
 		{
 		}
@@ -66,13 +61,15 @@ namespace Castle.Facilities.WcfIntegration.Tests
 		{
 			throw new InvalidOperationException("Oh No!");
 		}
-		#endregion
 	}
 
-	delegate int GetValueFromConstructor();
-	delegate int GetValueFromConstructorAsRef(ref int refValue);
-	delegate int GetValueFromConstructorAsRefAndOut(ref int refValue, out int outValue);
-	delegate bool UnitOfWorkIsInitialized();
+	internal delegate int GetValueFromConstructor();
+
+	internal delegate int GetValueFromConstructorAsRef(ref int refValue);
+
+	internal delegate int GetValueFromConstructorAsRefAndOut(ref int refValue, out int outValue);
+
+	internal delegate bool UnitOfWorkIsInitialized();
 
 	public class AsyncOperations : IAsyncOperations
 	{
@@ -96,20 +93,10 @@ namespace Castle.Facilities.WcfIntegration.Tests
 			return getValueCtor.BeginInvoke(callback, asyncState);
 		}
 
-		public int EndGetValueFromConstructor(IAsyncResult result)
-		{
-			return getValueCtor.EndInvoke(result);
-		}
-
 		public IAsyncResult BeginGetValueFromConstructorAsRef(
 			ref int refValue, AsyncCallback callback, object asyncState)
 		{
 			return getValueCtorRef.BeginInvoke(ref refValue, callback, asyncState);
-		}
-
-		public int EndGetValueFromConstructorAsRef(ref int refValue, IAsyncResult result)
-		{
-			return getValueCtorRef.EndInvoke(ref refValue, result);
 		}
 
 		public IAsyncResult BeginGetValueFromConstructorAsRefAndOut(
@@ -119,14 +106,24 @@ namespace Castle.Facilities.WcfIntegration.Tests
 			return getValueCtorRefOut.BeginInvoke(ref refValue, out outValue, callback, asyncState);
 		}
 
-		public int EndGetValueFromConstructorAsRefAndOut(ref int refValue, out int outValue, IAsyncResult result)
-		{
-			return getValueCtorRefOut.EndInvoke(ref refValue, out outValue, result);
-		}
-
 		public IAsyncResult BeginUnitOfWorkIsInitialized(AsyncCallback callback, object asyncState)
 		{
 			return uow.BeginInvoke(callback, asyncState);
+		}
+
+		public int EndGetValueFromConstructor(IAsyncResult result)
+		{
+			return getValueCtor.EndInvoke(result);
+		}
+
+		public int EndGetValueFromConstructorAsRef(ref int refValue, IAsyncResult result)
+		{
+			return getValueCtorRef.EndInvoke(ref refValue, result);
+		}
+
+		public int EndGetValueFromConstructorAsRefAndOut(ref int refValue, out int outValue, IAsyncResult result)
+		{
+			return getValueCtorRefOut.EndInvoke(ref refValue, out outValue, result);
 		}
 
 		public bool EndUnitOfWorkIsInitialized(IAsyncResult result)

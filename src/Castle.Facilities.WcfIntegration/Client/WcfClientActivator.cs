@@ -171,6 +171,7 @@ namespace Castle.Facilities.WcfIntegration
 			IKernel kernel, IWcfClientModel clientModel, ComponentModel model, out IWcfBurden burden)
 			where TModel : IWcfClientModel
 		{
+			// NOTE: this method *is* being used, via reflection, so just ignore ReSharper's whinging in this case.
 			var channelBuilder = kernel.Resolve<IChannelBuilder<TModel>>();
 			return channelBuilder.GetChannelCreator((TModel)clientModel, model.Service, out burden);
 		}

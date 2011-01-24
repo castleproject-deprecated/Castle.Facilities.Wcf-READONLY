@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ namespace Castle.Facilities.WcfIntegration
 		protected IKernel Kernel { get; private set; }
 
 		public WcfClientExtension Clients { get; set; }
-	
+
 		protected void ConfigureChannelFactory(ChannelFactory channelFactory, IWcfClientModel clientModel, IWcfBurden burden)
 		{
 			var extensions = new ChannelFactoryExtensions(channelFactory, Kernel)
@@ -70,9 +70,13 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		protected abstract ChannelCreator GetChannel(Type contract);
+
 		protected abstract ChannelCreator GetChannel(Type contract, ServiceEndpoint endpoint);
+
 		protected abstract ChannelCreator GetChannel(Type contract, string configurationName);
+
 		protected abstract ChannelCreator GetChannel(Type contract, Binding binding, string address);
+
 		protected abstract ChannelCreator GetChannel(Type contract, Binding binding, EndpointAddress address);
 
 		#region IWcfEndpointVisitor Members
@@ -81,7 +85,7 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			channelCreator = GetChannel(contract);
 		}
-        
+
 		void IWcfEndpointVisitor.VisitServiceEndpoint(ServiceEndpointModel model)
 		{
 			channelCreator = GetChannel(contract, model.ServiceEndpoint);
@@ -122,6 +126,7 @@ namespace Castle.Facilities.WcfIntegration
 				}
 			}
 		}
+
 #if DOTNET40
 		void IWcfEndpointVisitor.VisitBindingDiscoveredEndpoint(DiscoveredEndpointModel model)
 		{
@@ -157,7 +162,7 @@ namespace Castle.Facilities.WcfIntegration
 					{
 						binding = GetBindingFromMetadata(endpointMetadata);
 					}
-					
+
 					var address = endpointMetadata.Address;
 					if (model.Identity != null)
 					{
@@ -180,13 +185,14 @@ namespace Castle.Facilities.WcfIntegration
 				else
 				{
 					throw new EndpointNotFoundException(string.Format(
-						"Unable to discover the endpoint for contract {0}.  " + 
+						"Unable to discover the endpoint for contract {0}.  " +
 						"Either no service exists or it does not support discovery.",
 						contract.FullName));
 				}
 			}
 		}
 #endif
+
 		#endregion
 
 		protected virtual Binding InferBinding(Uri address)
@@ -197,6 +203,7 @@ namespace Castle.Facilities.WcfIntegration
 			}
 			return null;
 		}
+
 #if DOTNET40
 		private FindCriteria CreateSearchCriteria(DiscoveredEndpointModel model)
 		{
@@ -230,14 +237,20 @@ namespace Castle.Facilities.WcfIntegration
 
 		internal static Binding GetBindingFromMetadata(EndpointDiscoveryMetadata metadata)
 		{
-			var metadataExtension = 
-				(from extension in metadata.Extensions
-				 where extension.Name == WcfConstants.EndpointMetadata
-				 select extension).FirstOrDefault();
-			if (metadataExtension == null) return null;
+			var metadataExtension =
+				metadata.Extensions
+					.Where(extension => extension.Name == WcfConstants.EndpointMetadata)
+					.FirstOrDefault();
+			if (metadataExtension == null)
+			{
+				return null;
+			}
 
 			var endpointMetadata = metadataExtension.Elements().FirstOrDefault();
-			if (endpointMetadata == null) return null;
+			if (endpointMetadata == null)
+			{
+				return null;
+			}
 
 			using (var xmlReader = endpointMetadata.CreateReader())
 			{

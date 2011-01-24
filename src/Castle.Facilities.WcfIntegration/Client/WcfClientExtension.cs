@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,15 +31,14 @@ namespace Castle.Facilities.WcfIntegration
 
 	public class WcfClientExtension : IDisposable
 	{
+		private static readonly IWcfPolicy[] ReconnectChannelPolicy = new[] { new ReconnectChannelPolicy() };
 		private readonly List<Func<Uri, Binding>> bindingPolicies = new List<Func<Uri, Binding>>();
+		private readonly ProxyGenerator proxyGenerator = new ProxyGenerator();
 		private Action afterInit;
 		private TimeSpan? closeTimeout;
 		private Binding defaultBinding;
 		private WcfFacility facility;
 		private IKernel kernel;
-		private readonly ProxyGenerator proxyGenerator = new ProxyGenerator();
-
-		private static readonly IWcfPolicy[] ReconnectChannelPolicy =  new[] { new ReconnectChannelPolicy() };
 
 		public WcfClientExtension()
 		{
