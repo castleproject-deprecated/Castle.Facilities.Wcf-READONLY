@@ -279,7 +279,6 @@
     <None Include="..\..\buildscripts\CastleKey.snk">
       <Link>CastleKey.snk</Link>
     </None>
-    <None Include="WcfIntegration.cd" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
