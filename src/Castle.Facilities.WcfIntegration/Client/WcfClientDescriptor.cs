@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
+
 	using Castle.MicroKernel;
+
 	using System.Collections.Generic;
+
 	using Castle.MicroKernel.Registration;
 
 	/// <summary>
-	/// Describes a list of WCF channels to register.
+	///   Describes a list of WCF channels to register.
 	/// </summary>
 	public class WcfClientDescriptor : IRegistration
 	{
@@ -34,9 +37,9 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Allows customized configurations of the channels.
+		///   Allows customized configurations of the channels.
 		/// </summary>
-		/// <param name="configurer">The configuration action.</param>
+		/// <param name = "configurer">The configuration action.</param>
 		/// <returns></returns>
 		public WcfClientDescriptor Configure(Action<ComponentRegistration> configurer)
 		{
@@ -44,11 +47,25 @@ namespace Castle.Facilities.WcfIntegration
 			return this;
 		}
 
-		#region IRegistration Members
+		private void ValidateChannels(IEnumerable<IWcfClientModel> channels)
+		{
+			foreach (var channel in channels)
+			{
+				if (channel.Contract == null)
+				{
+					throw new ArgumentException("The channel does not specify a contract.");
+				}
+
+				if (!channel.Contract.IsInterface)
+				{
+					throw new ArgumentException("The channel contract must be an interface.");
+				}
+			}
+		}
 
 		void IRegistration.Register(IKernel kernel)
 		{
-			foreach (IWcfClientModel channel in channels)
+			foreach (var channel in channels)
 			{
 				var registration = Component.For(channel.Contract);
 				registration.DependsOn(Property.ForKey("channel").Eq(channel));
@@ -66,24 +83,6 @@ namespace Castle.Facilities.WcfIntegration
 				if (!kernel.HasComponent(registration.Name))
 				{
 					kernel.Register(registration);
-				}
-			}
-		}
-
-		#endregion
-
-		private void ValidateChannels(IEnumerable<IWcfClientModel> channels)
-		{
-			foreach (var channel in channels)
-			{
-				if (channel.Contract == null)
-				{
-					throw new ArgumentException("The channel does not specify a contract.");
-				}
-
-				if (!channel.Contract.IsInterface)
-				{
-					throw new ArgumentException("The channel contract must be an interface.");
 				}
 			}
 		}

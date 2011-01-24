@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ namespace Castle.Facilities.WcfIntegration.Tests.Components
 {
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Client.Async;
+
 	[ServiceContract]
 	public interface ICallbackService
 	{
@@ -25,17 +27,17 @@ namespace Castle.Facilities.WcfIntegration.Tests.Components
 
 	public class CallbackService : ICallbackService
 	{
-		public void Callback(int valueFromTheOtherSide)
-		{
-			this.valueFromTheOtherSide = valueFromTheOtherSide;
-		}
+		private int valueFromTheOtherSide;
 
-		int valueFromTheOtherSide;
-		
-		public int ValueFromTheOtherSide 
+		public int ValueFromTheOtherSide
 		{
 			get { return valueFromTheOtherSide; }
 			set { valueFromTheOtherSide = value; }
+		}
+
+		public void Callback(int valueFromTheOtherSide)
+		{
+			this.valueFromTheOtherSide = valueFromTheOtherSide;
 		}
 	}
 
@@ -53,14 +55,14 @@ namespace Castle.Facilities.WcfIntegration.Tests.Components
 	{
 		public void DoSomething(int value)
 		{
-			ICallbackService callbackService = OperationContext.Current.GetCallbackChannel<ICallbackService>();
-			callbackService.Callback(value * 2);
+			var callbackService = OperationContext.Current.GetCallbackChannel<ICallbackService>();
+			callbackService.Callback(value*2);
 		}
 
 		public void DoSomethingElse(int value)
 		{
-			ICallbackService callbackService = OperationContext.Current.GetCallbackChannel<ICallbackService>();
-			callbackService.BeginWcfCall(p => p.Callback(value * 4));
+			var callbackService = OperationContext.Current.GetCallbackChannel<ICallbackService>();
+			callbackService.BeginWcfCall(p => p.Callback(value*4));
 		}
 	}
 }

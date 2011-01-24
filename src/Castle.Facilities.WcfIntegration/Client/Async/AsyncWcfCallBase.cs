@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
 	using System.Threading;
+
 	using Castle.DynamicProxy;
 
 	public abstract class AsyncWcfCallBase<TProxy> : IWcfAsyncBindings
 	{
-		private readonly TProxy proxy;
-		private readonly Action<TProxy> onBegin;
-		private readonly WcfRemotingAsyncInterceptor wcfAsyncInterceptor;
-		private AsyncWcfCallContext context;
 		protected object[] outArguments;
 		protected object[] unboundOutArguments;
+		private readonly Action<TProxy> onBegin;
+		private readonly TProxy proxy;
+		private readonly WcfRemotingAsyncInterceptor wcfAsyncInterceptor;
+		private AsyncWcfCallContext context;
 
 		public AsyncWcfCallBase(TProxy proxy, Action<TProxy> onBegin)
 		{
@@ -51,30 +52,6 @@ namespace Castle.Facilities.WcfIntegration.Async
 			wcfAsyncInterceptor = GetAsyncInterceptor(proxy);
 		}
 
-		public object[] OutArgs
-		{
-			get { return outArguments; }
-		}
-
-		public object[] UnboundOutArgs
-		{
-			get { return unboundOutArguments; }
-		}
-
-		public TOut GetOutArg<TOut>(int index)
-		{
-			return (TOut)ExtractOutOfType(typeof(TOut), index);
-		}
-
-		public TOut GetUnboundOutArg<TOut>(int index)
-		{
-			return (TOut)ExtractUnboundOutOfType(typeof(TOut), index);
-		}
-
-		public bool UseSynchronizationContext { get; set; }
-
-		#region IAsyncResult Members
-
 		public object AsyncState
 		{
 			get { return context.AsyncResult.AsyncState; }
@@ -95,53 +72,38 @@ namespace Castle.Facilities.WcfIntegration.Async
 			get { return context.AsyncResult.IsCompleted; }
 		}
 
-		#endregion
-
-		private WcfRemotingAsyncInterceptor GetAsyncInterceptor(TProxy proxy)
+		public object[] OutArgs
 		{
-			var interceptors = Array.FindAll((proxy as IProxyTargetAccessor).GetInterceptors(),
-											 i => i is WcfRemotingAsyncInterceptor);
-
-			if (interceptors.Length <= 0)
-			{
-				throw new ArgumentException("This proxy does not support async calls.", "proxy");
-			}
-
-			if (interceptors.Length != 1)
-			{
-				throw new ArgumentException("This proxy has more than one WcfRemotingAsyncInterceptor.", "proxy");
-			}
-
-			return interceptors[0] as WcfRemotingAsyncInterceptor;
+			get { return outArguments; }
 		}
 
-		internal IAsyncResult Begin(AsyncCallback callback, object state)
+		public object[] UnboundOutArgs
 		{
-			context = wcfAsyncInterceptor.PrepareCall(WrapCallback(callback), state, proxy, GetDefaultReturnValue());
-			onBegin(proxy);
-			return context.AsyncResult;
+			get { return unboundOutArguments; }
 		}
 
-		private AsyncCallback WrapCallback(AsyncCallback callback)
-		{
-			var cb = callback;
-			callback = ar => 
-			{
-				if (context != null)
-					context.AsyncResult = ar;
-				cb(ar);
-			};
-
-			var useSynchronizationContext = UseSynchronizationContext;
-			var currentSynchronizationContext = SynchronizationContext.Current;
-			if (callback == null || useSynchronizationContext == false || currentSynchronizationContext == null)
-			{
-				return callback;
-			}
-			return ar => currentSynchronizationContext.Post(o => callback(ar), null);
-		}
+		public bool UseSynchronizationContext { get; set; }
 
 		protected abstract object GetDefaultReturnValue();
+
+		public TOut GetOutArg<TOut>(int index)
+		{
+			return (TOut)ExtractOutOfType(typeof(TOut), index);
+		}
+
+		public TOut GetUnboundOutArg<TOut>(int index)
+		{
+			return (TOut)ExtractUnboundOutOfType(typeof(TOut), index);
+		}
+
+		protected void CreateUnusedOutArgs(int fromIndex)
+		{
+			unboundOutArguments = new object[Math.Max(0, outArguments.Length - fromIndex)];
+			if (unboundOutArguments.Length > 0)
+			{
+				Array.Copy(outArguments, fromIndex, unboundOutArguments, 0, unboundOutArguments.Length);
+			}
+		}
 
 		protected void End(Action<WcfRemotingAsyncInterceptor, AsyncWcfCallContext> action)
 		{
@@ -170,6 +132,13 @@ namespace Castle.Facilities.WcfIntegration.Async
 			return ExtractOutOfType(type, index, unboundOutArguments);
 		}
 
+		internal IAsyncResult Begin(AsyncCallback callback, object state)
+		{
+			context = wcfAsyncInterceptor.PrepareCall(WrapCallback(callback), state, proxy, GetDefaultReturnValue());
+			onBegin(proxy);
+			return context.AsyncResult;
+		}
+
 		private object ExtractOutOfType(Type type, int index, object[] outArgs)
 		{
 			if (outArgs == null)
@@ -183,7 +152,7 @@ namespace Castle.Facilities.WcfIntegration.Async
 					"There is no out argument at index {0}.  Please check the method signature.", index));
 			}
 
-			object outArg = outArgs[index];
+			var outArg = outArgs[index];
 
 			if (outArg == null && type.IsValueType)
 			{
@@ -195,19 +164,49 @@ namespace Castle.Facilities.WcfIntegration.Async
 			{
 				throw new InvalidOperationException(string.Format(
 					"There is a type mismatch for the out argument at index {0}.  Expected {1}, but found {2}.  Please check the method signature.",
-						index, type.FullName, outArg.GetType().FullName));
+					index, type.FullName, outArg.GetType().FullName));
 			}
 
 			return outArg;
 		}
 
-		protected void CreateUnusedOutArgs(int fromIndex)
+		private WcfRemotingAsyncInterceptor GetAsyncInterceptor(TProxy proxy)
 		{
-			unboundOutArguments = new object[Math.Max(0, outArguments.Length - fromIndex)];
-			if (unboundOutArguments.Length > 0)
+			var interceptors = Array.FindAll((proxy as IProxyTargetAccessor).GetInterceptors(),
+			                                 i => i is WcfRemotingAsyncInterceptor);
+
+			if (interceptors.Length <= 0)
 			{
-				Array.Copy(outArguments, fromIndex, unboundOutArguments, 0, unboundOutArguments.Length);
+				throw new ArgumentException("This proxy does not support async calls.", "proxy");
 			}
+
+			if (interceptors.Length != 1)
+			{
+				throw new ArgumentException("This proxy has more than one WcfRemotingAsyncInterceptor.", "proxy");
+			}
+
+			return interceptors[0] as WcfRemotingAsyncInterceptor;
+		}
+
+		private AsyncCallback WrapCallback(AsyncCallback callback)
+		{
+			var cb = callback;
+			callback = ar =>
+			{
+				if (context != null)
+				{
+					context.AsyncResult = ar;
+				}
+				cb(ar);
+			};
+
+			var useSynchronizationContext = UseSynchronizationContext;
+			var currentSynchronizationContext = SynchronizationContext.Current;
+			if (callback == null || useSynchronizationContext == false || currentSynchronizationContext == null)
+			{
+				return callback;
+			}
+			return ar => currentSynchronizationContext.Post(o => callback(ar), null);
 		}
 	}
 }

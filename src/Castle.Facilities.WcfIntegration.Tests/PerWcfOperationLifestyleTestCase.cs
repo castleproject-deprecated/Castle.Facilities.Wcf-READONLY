@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using System;
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Lifestyles;
+	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.Facilities.WcfIntegration.Tests.Components;
 	using Castle.MicroKernel.Registration;
@@ -27,44 +29,8 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	[TestFixture]
 	public class PerWcfOperationLifestyleTestCase
 	{
-		[SetUp]
-		public void SetUp()
-		{
-			windsorContainer = new WindsorContainer()
-				.AddFacility<WcfFacility>(f => f.CloseTimeout = TimeSpan.Zero)
-				.Register(
-				Component.For<ServiceHostListener>(),
-				Component.For<UnitOfworkEndPointBehavior>(),
-				Component.For<NetDataContractFormatBehavior>(),
-				Component.For<IOne>().ImplementedBy<One>().LifeStyle.PerWcfOperation(),
-				Component.For<HasOne>().LifeStyle.PerWcfOperation(),
-				Component.For<IServiceWithDependencies>().ImplementedBy<ServiceWithDependencies>().LifeStyle.Transient
-					.Named("Operations")
-					.AsWcfService(new DefaultServiceModel().AddEndpoints(
-					       	WcfEndpoint.BoundTo(new NetTcpBinding { PortSharingEnabled = true })
-					       		.At("net.tcp://localhost/Operations")
-					       	)
-					)
-				);
-
-			client = CreateClient();
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			windsorContainer.Dispose();
-			ServiceWithDependencies.Dependencies.Clear();
-		}
-
-		private IWindsorContainer windsorContainer;
 		private IServiceWithDependencies client;
-
-		private IServiceWithDependencies CreateClient()
-		{
-			return ChannelFactory<IServiceWithDependencies>.CreateChannel(
-				new NetTcpBinding { PortSharingEnabled = true }, new EndpointAddress("net.tcp://localhost/Operations"));
-		}
+		private IWindsorContainer windsorContainer;
 
 		[Test]
 		public void Dependencies_should_be_reused_among_services_within_call()
@@ -85,6 +51,42 @@ namespace Castle.Facilities.WcfIntegration.Tests
 			var one1 = ServiceWithDependencies.Dependencies[0] as IOne;
 			var one2 = ServiceWithDependencies.Dependencies[2] as IOne;
 			Assert.AreNotSame(one1, one2);
+		}
+
+		[SetUp]
+		public void SetUp()
+		{
+			windsorContainer = new WindsorContainer()
+				.AddFacility<WcfFacility>(f => f.CloseTimeout = TimeSpan.Zero)
+				.Register(
+					Component.For<ServiceHostListener>(),
+					Component.For<UnitOfworkEndPointBehavior>(),
+					Component.For<NetDataContractFormatBehavior>(),
+					Component.For<IOne>().ImplementedBy<One>().LifeStyle.PerWcfOperation(),
+					Component.For<HasOne>().LifeStyle.PerWcfOperation(),
+					Component.For<IServiceWithDependencies>().ImplementedBy<ServiceWithDependencies>().LifeStyle.Transient
+						.Named("Operations")
+						.AsWcfService(new DefaultServiceModel().AddEndpoints(
+							WcfEndpoint.BoundTo(new NetTcpBinding { PortSharingEnabled = true })
+								.At("net.tcp://localhost/Operations")
+						              	)
+						)
+				);
+
+			client = CreateClient();
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			windsorContainer.Dispose();
+			ServiceWithDependencies.Dependencies.Clear();
+		}
+
+		private IServiceWithDependencies CreateClient()
+		{
+			return ChannelFactory<IServiceWithDependencies>.CreateChannel(
+				new NetTcpBinding { PortSharingEnabled = true }, new EndpointAddress("net.tcp://localhost/Operations"));
 		}
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,41 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.ServiceModel;
 
+	
 	public static class AdHocServiceHostAwareExtensions
 	{
-		public static T OnCreated<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
+		public static T OnClosed<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
 		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnCreated(action));
-		}
-
-		public static T OnOpening<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
-		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnOpening(action));
-		}
-
-		public static T OnOpened<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
-		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnOpened(action));
+			return Subscribe(serviceModel, adHoc => adHoc.OnClosed(action));
 		}
 
 		public static T OnClosing<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
 		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnClosing(action));
+			return Subscribe(serviceModel, adHoc => adHoc.OnClosing(action));
 		}
 
-		public static T OnClosed<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
+		public static T OnCreated<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
 		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnClosed(action));
+			return Subscribe(serviceModel, adHoc => adHoc.OnCreated(action));
 		}
 
 		public static T OnFaulted<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
 		{
-			return Subscribe<T>(serviceModel, adHoc => adHoc.OnFaulted(action));
+			return Subscribe(serviceModel, adHoc => adHoc.OnFaulted(action));
+		}
+
+		public static T OnOpened<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
+		{
+			return Subscribe(serviceModel, adHoc => adHoc.OnOpened(action));
+		}
+
+		public static T OnOpening<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>
+		{
+			return Subscribe(serviceModel, adHoc => adHoc.OnOpening(action));
 		}
 
 		private static T Subscribe<T>(WcfServiceModel<T> serviceModel, Action<AdHocServiceHostAware> subscribe) where T : WcfServiceModel<T>
@@ -57,4 +58,3 @@ namespace Castle.Facilities.WcfIntegration
 		}
 	}
 }
-

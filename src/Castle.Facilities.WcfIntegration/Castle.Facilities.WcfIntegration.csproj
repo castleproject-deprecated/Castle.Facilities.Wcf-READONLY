@@ -134,7 +134,7 @@
     <Compile Include="Client\Async\TypeSystem\AttributeHelpers.cs" />
     <Compile Include="Client\Discovery\DiscoveredEndpointMetadata.cs" />
     <Compile Include="Client\IWcfClientFactory.cs" />
-    <Compile Include="WcfInvocation.cs" />
+    <Compile Include="Client\Proxy\WcfInvocation.cs" />
     <Compile Include="Client\Policies\ReconnectChannelPolicy.cs" />
     <Compile Include="Client\Policies\RefreshChannelPolicy.cs" />
     <Compile Include="Client\Proxy\IWcfChannelHolder.cs" />

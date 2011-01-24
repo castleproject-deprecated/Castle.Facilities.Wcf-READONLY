@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 #if DOTNET40
@@ -23,8 +23,8 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel;
 
 	using Castle.Core;
+	using Castle.Facilities.WcfIntegration.Client.Proxy;
 	using Castle.Facilities.WcfIntegration.Internal;
-	using Castle.Facilities.WcfIntegration.Proxy;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.ComponentActivator;
 	using Castle.MicroKernel.Context;

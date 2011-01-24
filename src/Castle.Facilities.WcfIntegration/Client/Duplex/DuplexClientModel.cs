@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Duplex
 {
 	using System;
 	using System.ServiceModel;
 
 	public class DuplexClientModel : WcfClientModel<DuplexClientModel>
-    {
-        private InstanceContext callbackContext;
+	{
+		private InstanceContext callbackContext;
 
 		public DuplexClientModel()
 		{
@@ -30,18 +30,18 @@ namespace Castle.Facilities.WcfIntegration
 		{
 		}
 
-        public InstanceContext CallbackContext
-        {
+		public InstanceContext CallbackContext
+		{
 			get { return callbackContext; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
-                callbackContext = value; 
-            }
-        }
+			set
+			{
+				if (value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+				callbackContext = value;
+			}
+		}
 
 		public DuplexClientModel Callback(object callback)
 		{
@@ -53,5 +53,5 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			return new DuplexClientModel(endpoint);
 		}
-    }
+	}
 }

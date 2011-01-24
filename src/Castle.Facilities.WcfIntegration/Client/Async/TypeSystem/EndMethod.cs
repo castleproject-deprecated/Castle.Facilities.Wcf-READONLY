@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 	using System.Reflection;
@@ -28,14 +28,9 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			parameters = ObtainParameters(syncMethod);
 		}
 
-		public override ParameterInfo[] GetParameters()
+		public override Type DeclaringType
 		{
-			return parameters;
-		}
-
-		public override Type ReturnType
-		{
-			get { return SyncMethod.ReturnType; }
+			get { return AsyncType; }
 		}
 
 		public override string Name
@@ -43,9 +38,9 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			get { return "End" + SyncMethod.Name; }
 		}
 
-		public override Type DeclaringType
+		public override Type ReturnType
 		{
-			get { return AsyncType; }
+			get { return SyncMethod.ReturnType; }
 		}
 
 		public override object[] GetCustomAttributes(Type attributeType, bool inherit)
@@ -53,9 +48,14 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			return new object[0];
 		}
 
+		public override ParameterInfo[] GetParameters()
+		{
+			return parameters;
+		}
+
 		private ParameterInfo[] ObtainParameters(MethodInfo syncMethod)
 		{
-			ParameterInfo[] parameters = syncMethod.GetParameters();
+			var parameters = syncMethod.GetParameters();
 			Array.Resize(ref parameters, parameters.Length + 1);
 			parameters[parameters.Length - 1] = new AsyncMethodParameter(typeof(IAsyncResult), this);
 			return parameters;

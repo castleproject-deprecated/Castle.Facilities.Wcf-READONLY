@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,17 +17,43 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using System;
 	using System.Collections.Generic;
 	using System.ServiceModel;
+
 	using Castle.Core;
 	using Castle.DynamicProxy;
+	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;
+
 	using NUnit.Framework;
 
 	[TestFixture]
 	public class WcfServiceFixture
 	{
-		#region Setup/Teardown
+		private IOperations client;
+		private IWindsorContainer windsorContainer;
+
+		[Test]
+		public void CanCallServiceAndGetValueFromWindsorConfig()
+		{
+			var result = client.GetValueFromConstructor();
+			Assert.AreEqual(42, result);
+		}
+
+		[Test]
+		public void CanUseStandardDynamicProxyInterceptorsOnServices()
+		{
+			Assert.AreEqual(0, LoggingInterceptor.Calls.Count);
+			client.GetValueFromConstructor();
+			Assert.AreEqual(1, LoggingInterceptor.Calls.Count);
+		}
+
+		[TearDown]
+		public void TestCleanup()
+		{
+			windsorContainer.Dispose();
+			ServiceHostListener.Reset();
+		}
 
 		[SetUp]
 		public void TestInitialize()
@@ -45,9 +71,9 @@ namespace Castle.Facilities.WcfIntegration.Tests
 						.Interceptors(InterceptorReference.ForType<LoggingInterceptor>()).Anywhere
 						.DependsOn(new { number = 42 })
 						.AsWcfService(new DefaultServiceModel().AddEndpoints(
-							WcfEndpoint.BoundTo(new NetTcpBinding{PortSharingEnabled = true })
+							WcfEndpoint.BoundTo(new NetTcpBinding { PortSharingEnabled = true })
 								.At("net.tcp://localhost/Operations")
-								)
+						              	)
 						)
 				);
 
@@ -55,51 +81,16 @@ namespace Castle.Facilities.WcfIntegration.Tests
 			CallCountServiceBehavior.CallCount = 0;
 
 			client = ChannelFactory<IOperations>.CreateChannel(
-					new NetTcpBinding{PortSharingEnabled = true }, new EndpointAddress("net.tcp://localhost/Operations"));
-		}
-
-		[TearDown]
-		public void TestCleanup()
-		{
-			windsorContainer.Dispose();
-			ServiceHostListener.Reset();
-		}
-
-		#endregion
-
-		private IWindsorContainer windsorContainer;
-		private IOperations client;
-
-		[Test]
-		public void CanCallServiceAndGetValueFromWindsorConfig()
-		{
-			int result = client.GetValueFromConstructor();
-			Assert.AreEqual(42, result);
-		}
-
-		[Test]
-		public void CanUseStandardDynamicProxyInterceptorsOnServices()
-		{
-			Assert.AreEqual(0, LoggingInterceptor.Calls.Count);
-			client.GetValueFromConstructor();
-			Assert.AreEqual(1, LoggingInterceptor.Calls.Count);
+				new NetTcpBinding { PortSharingEnabled = true }, new EndpointAddress("net.tcp://localhost/Operations"));
 		}
 
 		[Test]
 		public void WillApplyEndPointBehaviors()
 		{
 			Assert.IsFalse(UnitOfWork.initialized, "Should be false before starting");
-			bool unitOfWorkIsInitialized_DuringCall = client.UnitOfWorkIsInitialized();
+			var unitOfWorkIsInitialized_DuringCall = client.UnitOfWorkIsInitialized();
 			Assert.IsTrue(unitOfWorkIsInitialized_DuringCall);
 			Assert.IsFalse(UnitOfWork.initialized, "Should be false after call");
-		}
-
-		[Test]
-		public void WillApplyServiceBehaviors()
-		{
-			Assert.AreEqual(0, CallCountServiceBehavior.CallCount);
-			client.GetValueFromConstructor();
-			Assert.AreEqual(1, CallCountServiceBehavior.CallCount);
 		}
 
 		[Test]
@@ -118,6 +109,14 @@ namespace Castle.Facilities.WcfIntegration.Tests
 		}
 
 		[Test]
+		public void WillApplyServiceBehaviors()
+		{
+			Assert.AreEqual(0, CallCountServiceBehavior.CallCount);
+			client.GetValueFromConstructor();
+			Assert.AreEqual(1, CallCountServiceBehavior.CallCount);
+		}
+
+		[Test]
 		public void WillReleaseAllExtensionsWhenUnregistered()
 		{
 			windsorContainer.Kernel.RemoveComponent("Operations");
@@ -128,14 +127,10 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	{
 		public static List<string> Calls = new List<string>();
 
-		#region IInterceptor Members
-
 		public void Intercept(IInvocation invocation)
 		{
 			Calls.Add(invocation.Method.Name);
 			invocation.Proceed();
 		}
-
-		#endregion
 	}
 }

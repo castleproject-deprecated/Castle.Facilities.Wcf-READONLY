@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
 
@@ -63,14 +63,14 @@ namespace Castle.Facilities.WcfIntegration.Async
 			CreateUnusedOutArgs(4);
 		}
 
-		private void InternalEnd()
-		{
-			End((i, c) => i.EndCall(c, out outArguments));
-		}
-
 		protected override object GetDefaultReturnValue()
 		{
 			return null;
+		}
+
+		private void InternalEnd()
+		{
+			End((i, c) => i.EndCall(c, out outArguments));
 		}
 	}
 }

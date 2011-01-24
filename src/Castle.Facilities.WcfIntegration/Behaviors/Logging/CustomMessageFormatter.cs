@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Behaviors
+namespace Castle.Facilities.WcfIntegration.Behaviors.Logging
 {
 	using System.ServiceModel.Channels;
 	using System.Text;
@@ -21,6 +21,16 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 	public class CustomMessageFormatter : AbstractMessageFormatter
 	{
 		public static readonly CustomMessageFormatter Instance = new CustomMessageFormatter();
+
+		protected virtual XmlWriter CreateWriter(StringBuilder output)
+		{
+			return XmlWriter.Create(output);
+		}
+
+		protected virtual XmlDictionaryWriter CreateWriter(Message message, char format, StringBuilder output)
+		{
+			return XmlDictionaryWriter.CreateDictionaryWriter(CreateWriter(output));
+		}
 
 		protected override string FormatMessage(Message message, string format)
 		{
@@ -42,16 +52,6 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			}
 
 			return output.ToString();
-		}
-
-		private bool TestFormat(ref string format, char test)
-		{
-			if (format[0] == test)
-			{
-				format = format.Substring(1);
-				return true;
-			}
-			return false;
 		}
 
 		private void FormattedHeaders(Message message, StringBuilder output)
@@ -92,14 +92,14 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			}
 		}
 
-		protected virtual XmlWriter CreateWriter(StringBuilder output)
+		private bool TestFormat(ref string format, char test)
 		{
-			return XmlWriter.Create(output);
-		}
-
-		protected virtual XmlDictionaryWriter CreateWriter(Message message, char format, StringBuilder output)
-		{
-			return XmlDictionaryWriter.CreateDictionaryWriter(CreateWriter(output));
+			if (format[0] == test)
+			{
+				format = format.Substring(1);
+				return true;
+			}
+			return false;
 		}
 	}
 }

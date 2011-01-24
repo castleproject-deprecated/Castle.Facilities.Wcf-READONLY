@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -9,9 +9,10 @@
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specifi
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
 	using System;
@@ -19,15 +20,16 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Discovery;
 
+	using Castle.Facilities.WcfIntegration.Client;
+
 	public class ServiceCatalogEndpoint
 	{
-		public Uri[] Scopes { get; set; }
-		
 		public Binding Binding { get; set; }
 
 		public TimeSpan? DiscoveryDuration { get; set; }
 
 		public DiscoveryVersion DiscoveryVersion { get; set; }
+		public Uri[] Scopes { get; set; }
 
 		public UdpDiscoveryEndpoint UdpDiscoveryEndpoint { get; set; }
 
@@ -38,11 +40,6 @@ namespace Castle.Facilities.WcfIntegration
 				return DiscoverEndpoint(new DiscoveryEndpoint(), required);
 			}
 			return DiscoverEndpoint(new DiscoveryEndpoint(DiscoveryVersion, ServiceDiscoveryMode.Managed), required);
-		}
-
-		public static implicit operator DiscoveryEndpoint(ServiceCatalogEndpoint endpoint)
-		{
-			return endpoint.Discover();
 		}
 
 		private DiscoveryEndpoint DiscoverEndpoint(DiscoveryEndpoint endpoint, bool required)
@@ -70,6 +67,11 @@ namespace Castle.Facilities.WcfIntegration
 
 				return null;
 			}
+		}
+
+		public static implicit operator DiscoveryEndpoint(ServiceCatalogEndpoint endpoint)
+		{
+			return endpoint.Discover();
 		}
 	}
 #endif

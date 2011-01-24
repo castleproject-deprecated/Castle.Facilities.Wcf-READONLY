@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
-    using System;
+	using System;
 	using System.Collections.Generic;
+
 	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Behaviors.Security;
 
 	public abstract class WcfClientModelBase : IWcfClientModel
 	{
+		protected bool wantsAsync;
 		private IWcfEndpoint endpoint;
 		private List<IWcfExtension> extensions;
-		protected bool wantsAsync;
 
 		protected WcfClientModelBase()
 		{
@@ -34,13 +36,6 @@ namespace Castle.Facilities.WcfIntegration
 			Endpoint = endpoint;
 		}
 
-		public bool WantsAsyncCapability
-		{
-			get { return wantsAsync; }
-		}
-
-		#region IWcfClientModel Members
-
 		public Type Contract
 		{
 			get { return endpoint.Contract; }
@@ -49,13 +44,13 @@ namespace Castle.Facilities.WcfIntegration
 		public IWcfEndpoint Endpoint
 		{
 			get { return endpoint; }
-			set 
+			set
 			{
 				if (value == null)
 				{
 					throw new ArgumentNullException("value");
 				}
-				endpoint = value; 
+				endpoint = value;
 			}
 		}
 
@@ -71,6 +66,11 @@ namespace Castle.Facilities.WcfIntegration
 			}
 		}
 
+		public bool WantsAsyncCapability
+		{
+			get { return wantsAsync; }
+		}
+
 		public virtual IWcfClientModel ForEndpoint(IWcfEndpoint endpoint)
 		{
 			var copy = (WcfClientModelBase)MemberwiseClone();
@@ -81,8 +81,6 @@ namespace Castle.Facilities.WcfIntegration
 			}
 			return copy;
 		}
-
-		#endregion
 	}
 
 	public abstract class WcfClientModel<T> : WcfClientModelBase
@@ -97,15 +95,9 @@ namespace Castle.Facilities.WcfIntegration
 		{
 		}
 
-		public T WithoutAsyncCapability()
-		{
-			wantsAsync = false;
-			return (T)this;
-		}
-
 		public T AddExtensions(params object[] extensions)
 		{
-			foreach (object extension in extensions)
+			foreach (var extension in extensions)
 			{
 				Extensions.Add(WcfExplicitExtension.CreateFrom(extension));
 			}
@@ -116,6 +108,11 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			return AddExtensions(credentials);
 		}
+
+		public T WithoutAsyncCapability()
+		{
+			wantsAsync = false;
+			return (T)this;
+		}
 	}
 }
-

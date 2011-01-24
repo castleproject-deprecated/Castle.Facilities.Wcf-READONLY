@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
 
@@ -25,14 +25,14 @@ namespace Castle.Facilities.WcfIntegration.Async
 
 		public TResult End()
 		{
-			TResult result = InternalEnd();
+			var result = InternalEnd();
 			CreateUnusedOutArgs(0);
 			return result;
 		}
 
 		public TResult End<TOut1>(out TOut1 out1)
 		{
-			TResult result = InternalEnd();
+			var result = InternalEnd();
 			out1 = (TOut1)ExtractOutOfType(typeof(TOut1), 0);
 			CreateUnusedOutArgs(1);
 			return result;
@@ -40,7 +40,7 @@ namespace Castle.Facilities.WcfIntegration.Async
 
 		public TResult End<TOut1, TOut2>(out TOut1 out1, out TOut2 out2)
 		{
-			TResult result = InternalEnd();
+			var result = InternalEnd();
 			out1 = (TOut1)ExtractOutOfType(typeof(TOut1), 0);
 			out2 = (TOut2)ExtractOutOfType(typeof(TOut2), 1);
 			CreateUnusedOutArgs(2);
@@ -49,7 +49,7 @@ namespace Castle.Facilities.WcfIntegration.Async
 
 		public TResult End<TOut1, TOut2, TOut3>(out TOut1 out1, out TOut2 out2, out TOut3 out3)
 		{
-			TResult result = InternalEnd();
+			var result = InternalEnd();
 			out1 = (TOut1)ExtractOutOfType(typeof(TOut1), 0);
 			out2 = (TOut2)ExtractOutOfType(typeof(TOut2), 1);
 			out3 = (TOut3)ExtractOutOfType(typeof(TOut3), 2);
@@ -59,7 +59,7 @@ namespace Castle.Facilities.WcfIntegration.Async
 
 		public TResult End<TOut1, TOut2, TOut3, TOut4>(out TOut1 out1, out TOut2 out2, out TOut3 out3, out TOut4 out4)
 		{
-			TResult result = InternalEnd();
+			var result = InternalEnd();
 			out1 = (TOut1)ExtractOutOfType(typeof(TOut1), 0);
 			out2 = (TOut2)ExtractOutOfType(typeof(TOut2), 1);
 			out3 = (TOut3)ExtractOutOfType(typeof(TOut3), 2);
@@ -68,7 +68,17 @@ namespace Castle.Facilities.WcfIntegration.Async
 			return result;
 		}
 
-		#region IWcfAsyncCall Members
+		protected override object GetDefaultReturnValue()
+		{
+			return default(TResult);
+		}
+
+		private TResult InternalEnd()
+		{
+			var result = default(TResult);
+			End((i, c) => { result = i.EndCall<TResult>(c, out outArguments); });
+			return result;
+		}
 
 		void IWcfAsyncCall.End()
 		{
@@ -93,20 +103,6 @@ namespace Castle.Facilities.WcfIntegration.Async
 		void IWcfAsyncCall.End<TOut1, TOut2, TOut3, TOut4>(out TOut1 out1, out TOut2 out2, out TOut3 out3, out TOut4 out4)
 		{
 			End(out out1, out out2, out out3, out out4);
-		}
-
-		#endregion
-
-		private TResult InternalEnd()
-		{
-			TResult result = default(TResult);
-			End((i, c) => { result = i.EndCall<TResult>(c, out outArguments); });
-			return result;
-		}
-
-		protected override object GetDefaultReturnValue()
-		{
-			return default(TResult);
 		}
 	}
 }

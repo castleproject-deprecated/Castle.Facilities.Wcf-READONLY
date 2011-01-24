@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
 	using System;
@@ -22,45 +22,17 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel.Description;
 	using System.ServiceModel.Discovery;
 	using System.Xml.Linq;
+
+	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Internal;
 
 	public class WcfDiscoveryExtension : AbstractServiceHostAware
 	{
-		private bool strict;
-		private DiscoveryEndpoint discoveryEndpoint;
-		private readonly HashSet<Uri> scopes = new HashSet<Uri>();
 		private readonly List<XElement> metadata = new List<XElement>();
+		private readonly HashSet<Uri> scopes = new HashSet<Uri>();
 		private HashSet<AnnouncementEndpoint> announceEndpoints;
-
-		public WcfDiscoveryExtension Strict()
-		{
-			strict = true;
-			return this;
-		}
-
-		public WcfDiscoveryExtension InScope(params Uri[] scopes)
-		{
-			this.scopes.AddAll(scopes);
-			return this;
-		}
-
-		public WcfDiscoveryExtension InScope(params string[] scopes)
-		{
-			this.scopes.AddAll(scopes.Select(scope => new Uri(scope)));
-			return this;
-		}
-
-		public WcfDiscoveryExtension WithMetadata(params XElement[] metadata)
-		{
-			this.metadata.AddRange(metadata);
-			return this;
-		}
-
-		public WcfDiscoveryExtension AtEndpoint(DiscoveryEndpoint endpoint)
-		{
-			discoveryEndpoint = endpoint;
-			return this;
-		}
+		private DiscoveryEndpoint discoveryEndpoint;
+		private bool strict;
 
 		public WcfDiscoveryExtension Announce()
 		{
@@ -79,6 +51,36 @@ namespace Castle.Facilities.WcfIntegration
 				announceEndpoints = new HashSet<AnnouncementEndpoint>();
 			}
 			announceEndpoints.Add(endpoint);
+			return this;
+		}
+
+		public WcfDiscoveryExtension AtEndpoint(DiscoveryEndpoint endpoint)
+		{
+			discoveryEndpoint = endpoint;
+			return this;
+		}
+
+		public WcfDiscoveryExtension InScope(params Uri[] scopes)
+		{
+			this.scopes.AddAll(scopes);
+			return this;
+		}
+
+		public WcfDiscoveryExtension InScope(params string[] scopes)
+		{
+			this.scopes.AddAll(scopes.Select(scope => new Uri(scope)));
+			return this;
+		}
+
+		public WcfDiscoveryExtension Strict()
+		{
+			strict = true;
+			return this;
+		}
+
+		public WcfDiscoveryExtension WithMetadata(params XElement[] metadata)
+		{
+			this.metadata.AddRange(metadata);
 			return this;
 		}
 
@@ -139,8 +141,8 @@ namespace Castle.Facilities.WcfIntegration
 			var document = new XDocument();
 			using (var xmlWriter = document.CreateWriter())
 			{
-				xmlWriter.WriteStartElement(WcfConstants.EndpointMetadata.LocalName, 
-											WcfConstants.EndpointMetadata.Namespace.NamespaceName);
+				xmlWriter.WriteStartElement(WcfConstants.EndpointMetadata.LocalName,
+				                            WcfConstants.EndpointMetadata.Namespace.NamespaceName);
 				metadata.WriteTo(xmlWriter);
 				xmlWriter.WriteEndElement();
 				xmlWriter.Flush();

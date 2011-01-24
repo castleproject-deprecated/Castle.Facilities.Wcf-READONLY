@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,10 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using System.ServiceModel;
 	using System.ServiceModel.Description;
 
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Client.Async;
 	using Castle.Facilities.WcfIntegration.Demo;
+	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;
@@ -31,17 +34,27 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	{
 		private WindsorContainer container;
 
-		[SetUp]
-		public void SetUp()
+		[Test]
+		public void Can_call_asynchronousely_component_based_solely_on_standard_wcf_config()
 		{
-			container = new WindsorContainer();
-			container.AddFacility<WcfFacility>(f => f.CloseTimeout = TimeSpan.Zero);
-		}
+			container.Register(
+				Component.For<IServiceBehavior>()
+					.Instance(new ServiceDebugBehavior
+					{
+						IncludeExceptionDetailInFaults = true
+					}),
+				Component.For<NetDataContractFormatBehavior>()
+					.Attribute("scope").Eq(WcfExtensionScope.Explicit),
+				Component.For<IAmUsingWindsor>().ImplementedBy<UsingWindsor>()
+					.DependsOn(new { number = 42 })
+					.AsWcfService(new DefaultServiceModel()
+					)
+				);
 
-		[TearDown]
-		public void TearDown()
-		{
-			container.Dispose();
+			var client = container.Resolve<IAmUsingWindsor>("WSHttpBinding_IAmUsingWindsor");
+			var asyncCall = client.BeginWcfCall(c => c.GetValueFromWindsorConfig());
+			var valueFromWindsorConfig = asyncCall.End();
+			Assert.AreEqual(42, valueFromWindsorConfig);
 		}
 
 		[Test]
@@ -56,7 +69,7 @@ namespace Castle.Facilities.WcfIntegration.Tests
 		{
 			container.Register(
 				Component.For<IServiceBehavior>()
-					.Instance(new ServiceDebugBehavior()
+					.Instance(new ServiceDebugBehavior
 					{
 						IncludeExceptionDetailInFaults = true
 					}),
@@ -67,34 +80,9 @@ namespace Castle.Facilities.WcfIntegration.Tests
 					.AsWcfService(new DefaultServiceModel()
 					)
 				);
-
 
 			var client = container.Resolve<IAmUsingWindsor>("WSHttpBinding_IAmUsingWindsor");
 			var valueFromWindsorConfig = client.GetValueFromWindsorConfig();
-			Assert.AreEqual(42, valueFromWindsorConfig);
-		}
-
-		[Test]
-		public void Can_call_asynchronousely_component_based_solely_on_standard_wcf_config()
-		{
-			container.Register(
-				Component.For<IServiceBehavior>()
-					.Instance(new ServiceDebugBehavior()
-					{
-						IncludeExceptionDetailInFaults = true
-					}),
-				Component.For<NetDataContractFormatBehavior>()
-					.Attribute("scope").Eq(WcfExtensionScope.Explicit),
-				Component.For<IAmUsingWindsor>().ImplementedBy<UsingWindsor>()
-					.DependsOn(new { number = 42 })
-					.AsWcfService(new DefaultServiceModel()
-					)
-				);
-
-
-			var client = container.Resolve<IAmUsingWindsor>("WSHttpBinding_IAmUsingWindsor");
-			var asyncCall = client.BeginWcfCall(c => c.GetValueFromWindsorConfig());
-			var valueFromWindsorConfig = asyncCall.End();
 			Assert.AreEqual(42, valueFromWindsorConfig);
 		}
 
@@ -103,7 +91,19 @@ namespace Castle.Facilities.WcfIntegration.Tests
 		{
 			Assert.Throws(typeof(TargetInvocationException),
 			              () => container.Resolve<IAmUsingWindsor>("NoSuchValueInConfig"));
+		}
 
+		[SetUp]
+		public void SetUp()
+		{
+			container = new WindsorContainer();
+			container.AddFacility<WcfFacility>(f => f.CloseTimeout = TimeSpan.Zero);
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			container.Dispose();
 		}
 	}
 }

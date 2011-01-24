@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,30 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
-    using System;
-    using System.ServiceModel;
-    using System.ServiceModel.Discovery.Version11;
+	using System;
+	using System.ServiceModel;
+	using System.ServiceModel.Discovery.Version11;
 
-    [ServiceContract(Name = "ServiceCatalog", Namespace = WcfConstants.Namespace)]
-    public interface IServiceCatalog
-    {
+	using Castle.Facilities.WcfIntegration.Internal;
+
+	[ServiceContract(Name = "ServiceCatalog", Namespace = WcfConstants.Namespace)]
+	public interface IServiceCatalog
+	{
+		[OperationContract(AsyncPattern = true)]
+		IAsyncResult BeginFindServices(FindCriteria11 criteria, AsyncCallback callback, object state);
+
+		[OperationContract(AsyncPattern = true)]
+		IAsyncResult BeginListServices(AsyncCallback callback, object state);
+
+		EndpointDiscoveryMetadata11[] EndFindServices(IAsyncResult result);
+
+		EndpointDiscoveryMetadata11[] EndListServices(IAsyncResult result);
+
 		[OperationContract]
 		EndpointDiscoveryMetadata11[] FindServices(FindCriteria11 criteria);
 
-        [OperationContract(AsyncPattern = true)]
-        IAsyncResult BeginFindServices(FindCriteria11 criteria, AsyncCallback callback, object state);
-		EndpointDiscoveryMetadata11[] EndFindServices(IAsyncResult result);
-
 		[OperationContract]
 		EndpointDiscoveryMetadata11[] ListServices();
-
-		[OperationContract(AsyncPattern = true)]
-        IAsyncResult BeginListServices(AsyncCallback callback, object state);
-        EndpointDiscoveryMetadata11[] EndListServices(IAsyncResult result);
-    }
+	}
 #endif
 }
-

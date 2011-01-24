@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Behaviors
+namespace Castle.Facilities.WcfIntegration.Behaviors.Logging
 {
 	using System;
 	using System.ServiceModel.Channels;
 
 	public abstract class AbstractMessageFormatter : IFormatProvider, ICustomFormatter
 	{
-		public object GetFormat(Type formatType)
-		{
-			return (typeof(ICustomFormatter).Equals(formatType)) ? this : null;
-		}
+		protected abstract string FormatMessage(Message message, string format);
 
 		public string Format(string format, object arg, IFormatProvider formatProvider)
 		{
@@ -41,6 +38,9 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			return arg.ToString();
 		}
 
-		protected abstract string FormatMessage(Message message, string format);
+		public object GetFormat(Type formatType)
+		{
+			return (typeof(ICustomFormatter).Equals(formatType)) ? this : null;
+		}
 	}
 }

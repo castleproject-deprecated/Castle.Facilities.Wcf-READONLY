@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System.ServiceModel;
 
@@ -28,6 +28,11 @@ namespace Castle.Facilities.WcfIntegration
 
 		public int ExecutionOrder { get; set; }
 
+		protected T Owner
+		{
+			get { return owner; }
+		}
+
 		public AbstractExtension<T> ExecuteAt(int order)
 		{
 			ExecutionOrder = order;
@@ -42,11 +47,6 @@ namespace Castle.Facilities.WcfIntegration
 		public virtual void Detach(T owner)
 		{
 			this.owner = null;
-		}
-
-		protected T Owner
-		{
-			get { return owner; }
 		}
 	}
 }

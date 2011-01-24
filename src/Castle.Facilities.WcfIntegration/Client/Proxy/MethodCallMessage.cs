@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Proxy
+namespace Castle.Facilities.WcfIntegration.Client.Proxy
 {
 	using System;
 	using System.Collections;
@@ -23,15 +23,14 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 
 	public class MethodCallMessage : IMethodCallMessage
 	{
-		private readonly MethodInfo method;
-		private readonly ParameterInfo[] parameters;
+		private static readonly object[] EmptyArguments = new object[0];
+		private static readonly Func<LogicalCallContext> createLogicalContext = LogicalCallContextBuilder();
 		private readonly object[] arguments;
 		private readonly object[] inArguments;
-		private IDictionary properties;
+		private readonly MethodInfo method;
+		private readonly ParameterInfo[] parameters;
 		private LogicalCallContext logicalContext;
-
-		private static readonly object[] EmptyArguments = new object[0];
-		private static Func<LogicalCallContext> createLogicalContext = LogicalCallContextBuilder();
+		private IDictionary properties;
 
 		public MethodCallMessage(MethodInfo method, object[] arguments)
 		{
@@ -41,13 +40,12 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			inArguments = arguments.Where((a, i) => !parameters[i].IsOut).ToArray();
 		}
 
-		public IDictionary Properties
+		public object[] OutArgs
 		{
 			get
 			{
-				if (properties == null)
-					properties = new Hashtable();
-				return properties;
+				return parameters.Where(p => p.IsOut || p.ParameterType.IsByRef)
+					.Select((p, i) => Args[i]).ToArray();
 			}
 		}
 
@@ -56,34 +54,26 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			get { return parameters; }
 		}
 
-		public string GetArgName(int index)
+		public IDictionary Properties
 		{
-			return parameters[index].Name;
+			get
+			{
+				if (properties == null)
+				{
+					properties = new Hashtable();
+				}
+				return properties;
+			}
 		}
 
-		public object GetArg(int argNum)
+		public int InArgCount
 		{
-			return arguments[argNum];
+			get { return inArguments.Length; }
 		}
 
-		public string Uri
+		public object[] InArgs
 		{
-			get { return null; }
-		}
-
-		public string MethodName
-		{
-			get { return method.Name; }
-		}
-
-		public string TypeName
-		{
-			get { return method.DeclaringType.Name; }
-		}
-
-		public object MethodSignature
-		{
-			get { return parameters.Select(p => p.ParameterType).ToArray(); }
+			get { return inArguments; }
 		}
 
 		public int ArgCount
@@ -106,7 +96,9 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			get
 			{
 				if (logicalContext == null)
+				{
 					logicalContext = createLogicalContext();
+				}
 				return logicalContext;
 			}
 		}
@@ -116,9 +108,24 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			get { return method; }
 		}
 
-		public string GetInArgName(int index)
+		public string MethodName
 		{
-			return parameters.Where(p => !p.IsOut).ElementAt(index).Name;
+			get { return method.Name; }
+		}
+
+		public object MethodSignature
+		{
+			get { return parameters.Select(p => p.ParameterType).ToArray(); }
+		}
+
+		public string TypeName
+		{
+			get { return method.DeclaringType.Name; }
+		}
+
+		public string Uri
+		{
+			get { return null; }
 		}
 
 		public object GetInArg(int argNum)
@@ -126,23 +133,19 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			return inArguments[argNum];
 		}
 
-		public int InArgCount
+		public string GetInArgName(int index)
 		{
-			get { return inArguments.Length; }
+			return parameters.Where(p => !p.IsOut).ElementAt(index).Name;
 		}
 
-		public object[] InArgs
+		public object GetArg(int argNum)
 		{
-			get { return inArguments;}
+			return arguments[argNum];
 		}
 
-		public object[] OutArgs
+		public string GetArgName(int index)
 		{
-			get
-			{
-				return parameters.Where(p => p.IsOut || p.ParameterType.IsByRef)
-					.Select((p, i) => Args[i]).ToArray();
-			}
+			return parameters[index].Name;
 		}
 
 		private static Func<LogicalCallContext> LogicalCallContextBuilder()

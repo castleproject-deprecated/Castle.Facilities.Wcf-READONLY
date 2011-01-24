@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Behaviors
+namespace Castle.Facilities.WcfIntegration.Behaviors.Lifecyle
 {
 	using System.Collections;
 	using System.ServiceModel.Channels;
 
 	/// <summary>
-	/// Basic contract for performing message actions.
+	///   Basic contract for performing message actions.
 	/// </summary>
 	public interface IMessageAction : IMessageLifecyleAction
 	{
 		/// <summary>
-		/// Performs the action on the suppplied <paramref name="message"/>.
+		///   Performs the action on the suppplied <paramref name = "message" />.
 		/// </summary>
-		/// <param name="message">The message.</param>
-		/// <param name="lifecycle">The lifecycle stage.</param>
-		/// <param name="state">Optional state.</param>
+		/// <param name = "message">The message.</param>
+		/// <param name = "lifecycle">The lifecycle stage.</param>
+		/// <param name = "state">Optional state.</param>
 		/// <returns>true if further actions should be performed.</returns>
 		bool Perform(ref Message message, MessageLifecycle lifecycle, IDictionary state);
 	}

@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ServiceModel.Discovery;
+	using System;
+	using System.Collections;
+	using System.Collections.Generic;
+	using System.ServiceModel.Discovery;
 
-    public class RoundRobinGroup : IServiceContractGroup
-    {
+	public class RoundRobinGroup : IServiceContractGroup
+	{
 		public int Count
 		{
 			get { throw new NotImplementedException(); }
@@ -37,17 +37,12 @@ namespace Castle.Facilities.WcfIntegration
 			throw new NotImplementedException();
 		}
 
-        public bool Contains(EndpointDiscoveryMetadata endpoint)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool Remove(EndpointDiscoveryMetadata endpoint)
-        {
-            throw new NotImplementedException();
-        }
-
 		public void Clear()
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Contains(EndpointDiscoveryMetadata endpoint)
 		{
 			throw new NotImplementedException();
 		}
@@ -57,16 +52,20 @@ namespace Castle.Facilities.WcfIntegration
 			throw new NotImplementedException();
 		}
 
+		public bool Remove(EndpointDiscoveryMetadata endpoint)
+		{
+			throw new NotImplementedException();
+		}
+
 		public IEnumerator<EndpointDiscoveryMetadata> GetEnumerator()
 		{
 			throw new NotImplementedException();
 		}
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-    }
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return GetEnumerator();
+		}
+	}
 #endif
 }
-

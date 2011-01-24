@@ -17,7 +17,9 @@ namespace Castle.Facilities.WcfIntegration
 	using System;
 	using System.ServiceModel.Channels;
 
+	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.MicroKernel.Facilities;
 	using Castle.MicroKernel.Registration;
 	using Castle.MicroKernel.Resolvers;

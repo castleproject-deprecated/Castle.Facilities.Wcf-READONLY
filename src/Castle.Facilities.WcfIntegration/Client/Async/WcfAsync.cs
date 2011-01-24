@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,22 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
-	using Castle.Facilities.WcfIntegration.Async;
 
 	public static class WcfAsync
 	{
 		private static readonly AsyncCallback Nothing = delegate { };
 
 		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
 		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <typeparam name="TResult">The type of the result.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <typeparam name = "TResult">The type of the result.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
 			this TProxy proxy, Func<TProxy, TResult> method)
@@ -36,14 +35,14 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
 		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <typeparam name="TResult">The type of the result.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
-		/// <param name="callback">The asynchronous callback.</param>
-		/// <param name="state">The asynchronous state.</param>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <typeparam name = "TResult">The type of the result.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
+		/// <param name = "callback">The asynchronous callback.</param>
+		/// <param name = "state">The asynchronous state.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
 			this TProxy proxy, Func<TProxy, TResult> method,
@@ -55,14 +54,14 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
 		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <typeparam name="TResult">The type of the result.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
-		/// <param name="callback">The asynchronous callback.</param>
-		/// <param name="state">The asynchronous state.</param>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <typeparam name = "TResult">The type of the result.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
+		/// <param name = "callback">The asynchronous callback.</param>
+		/// <param name = "state">The asynchronous state.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
 			this TProxy proxy, Func<TProxy, TResult> method,
@@ -74,11 +73,57 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the result.
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
 		/// </summary>
-		/// <typeparam name="TResult">The result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
+		/// <returns>The async call handle.</returns>
+		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method)
+		{
+			return BeginWcfCall(proxy, method, Nothing, null);
+		}
+
+		/// <summary>
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
+		/// </summary>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
+		/// <param name = "callback">The asynchronous callback.</param>
+		/// <param name = "state">The asynchronous state.</param>
+		/// <returns>The async call handle.</returns>
+		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
+		                                                 Action<IWcfAsyncCall> callback, object state)
+		{
+			var call = new AsyncWcfCall<TProxy>(proxy, method);
+			call.Begin(ar => callback(call), state);
+			return call;
+		}
+
+		/// <summary>
+		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
+		/// </summary>
+		/// <typeparam name = "TProxy">The type of the proxy.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
+		/// <param name = "callback">The asynchronous callback.</param>
+		/// <param name = "state">The asynchronous state.</param>
+		/// <returns>The async call handle.</returns>
+		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
+		                                                 AsyncCallback callback, object state)
+		{
+			var call = new AsyncWcfCall<TProxy>(proxy, method);
+			call.Begin(ar => callback(call), state);
+			return call;
+		}
+
+		/// <summary>
+		///   Ends the asynchronous call and returns the result.
+		/// </summary>
+		/// <typeparam name = "TResult">The result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
 		/// <returns>The result of the call.</returns>
 		public static TResult EndWcfCall<TResult>(this object proxy, IAsyncResult result)
 		{
@@ -86,13 +131,13 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TResult">The main result type.</typeparam>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The additional result.</param>
+		/// <typeparam name = "TResult">The main result type.</typeparam>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The additional result.</param>
 		/// <returns>The main result.</returns>
 		public static TResult EndWcfCall<TResult, TOut1>(this object proxy, IAsyncResult result, out TOut1 out1)
 		{
@@ -100,15 +145,15 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TResult">The main result type.</typeparam>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The first additional result.</param>
-		/// <param name="out2">The second additional result.</param>
+		/// <typeparam name = "TResult">The main result type.</typeparam>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The first additional result.</param>
+		/// <param name = "out2">The second additional result.</param>
 		/// <returns>The main result.</returns>
 		public static TResult EndWcfCall<TResult, TOut1, TOut2>(
 			this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2)
@@ -117,38 +162,38 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TResult">The main result type.</typeparam>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <typeparam name="TOut3">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The first additional result.</param>
-		/// <param name="out2">The second additional result.</param>
-		/// <param name="out3">The thrid additional result.</param>
+		/// <typeparam name = "TResult">The main result type.</typeparam>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <typeparam name = "TOut3">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The first additional result.</param>
+		/// <param name = "out2">The second additional result.</param>
+		/// <param name = "out3">The thrid additional result.</param>
 		/// <returns>The main result.</returns>
 		public static TResult EndWcfCall<TResult, TOut1, TOut2, TOut3>(
-			this object proxy, IAsyncResult result, out TOut1 out1,TOut2 out2, TOut3 out3)
+			this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2, TOut3 out3)
 		{
 			return EnsureAsyncCall<TResult>(result).End(out out1, out out2, out out3);
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TResult">The main result type.</typeparam>
-		/// <typeparam name="TOut1">he additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <typeparam name="TOut3">The additional result type.</typeparam>
-		/// <typeparam name="TOut4">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The first additional result.</param>
-		/// <param name="out2">The second additional result.</param>
-		/// <param name="out3">The third additional result.</param>
-		/// <param name="out4">The fourth additional result.</param>
+		/// <typeparam name = "TResult">The main result type.</typeparam>
+		/// <typeparam name = "TOut1">he additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <typeparam name = "TOut3">The additional result type.</typeparam>
+		/// <typeparam name = "TOut4">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The first additional result.</param>
+		/// <param name = "out2">The second additional result.</param>
+		/// <param name = "out3">The third additional result.</param>
+		/// <param name = "out4">The fourth additional result.</param>
 		/// <returns>The main result.</returns>
 		public static TResult EndWcfCall<TResult, TOut1, TOut2, TOut3, TOut4>(
 			this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2, TOut3 out3, TOut4 out4)
@@ -157,98 +202,52 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
+		///   Ends the asynchronous call.
 		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
-		/// <returns>The async call handle.</returns>
-		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method)
-		{
-			return BeginWcfCall(proxy, method, Nothing, null);
-		}
-
-		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
-		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
-		/// <param name="callback">The asynchronous callback.</param>
-		/// <param name="state">The asynchronous state.</param>
-		/// <returns>The async call handle.</returns>
-		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
-														 Action<IWcfAsyncCall> callback, object state)
-		{
-			var call = new AsyncWcfCall<TProxy>(proxy, method);
-			call.Begin(ar => callback(call), state);
-			return call;
-		}
-
-		/// <summary>
-		/// Begins an asynchronous call of <paramref name="method"/> on given <paramref name="proxy"/>.
-		/// </summary>
-		/// <typeparam name="TProxy">The type of the proxy.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="method">The delegate encapsulating the invocation of the method.</param>
-		/// <param name="callback">The asynchronous callback.</param>
-		/// <param name="state">The asynchronous state.</param>
-		/// <returns>The async call handle.</returns>
-		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
-														 AsyncCallback callback, object state)
-		{
-			var call = new AsyncWcfCall<TProxy>(proxy, method);
-			call.Begin(ar => callback(call), state);
-			return call;
-		}
-
-		/// <summary>
-		/// Ends the asynchronous call.
-		/// </summary>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
 		public static void EndWcfCall(this object proxy, IAsyncResult result)
 		{
 			EnsureAsyncCall(result).End();
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The additional result.</param>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The additional result.</param>
 		public static void EndWcfCall<TOut1>(this object proxy, IAsyncResult result, out TOut1 out1)
 		{
 			EnsureAsyncCall(result).End(out out1);
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The additional result.</param>
-		/// <param name="out2">The additional result.</param>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The additional result.</param>
+		/// <param name = "out2">The additional result.</param>
 		public static void EndWcfCall<TOut1, TOut2>(this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2)
 		{
 			EnsureAsyncCall(result).End(out out1, out out2);
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <typeparam name="TOut3">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The additional result.</param>
-		/// <param name="out2">The additional result.</param>
-		/// <param name="out3">The additional result.</param>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <typeparam name = "TOut3">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The additional result.</param>
+		/// <param name = "out2">The additional result.</param>
+		/// <param name = "out3">The additional result.</param>
 		public static void EndWcfCall<TOut1, TOut2, TOut3>(
 			this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2, TOut3 out3)
 		{
@@ -256,18 +255,18 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Ends the asynchronous call and returns the results.
+		///   Ends the asynchronous call and returns the results.
 		/// </summary>
-		/// <typeparam name="TOut1">The additional result type.</typeparam>
-		/// <typeparam name="TOut2">The additional result type.</typeparam>
-		/// <typeparam name="TOut3">The additional result type.</typeparam>
-		/// <typeparam name="TOut4">The additional result type.</typeparam>
-		/// <param name="proxy">The proxy.</param>
-		/// <param name="result">The asynchronous result.</param>
-		/// <param name="out1">The additional result.</param>
-		/// <param name="out2">The additional result.</param>
-		/// <param name="out3">The additional result.</param>
-		/// <param name="out4">The additional result.</param>
+		/// <typeparam name = "TOut1">The additional result type.</typeparam>
+		/// <typeparam name = "TOut2">The additional result type.</typeparam>
+		/// <typeparam name = "TOut3">The additional result type.</typeparam>
+		/// <typeparam name = "TOut4">The additional result type.</typeparam>
+		/// <param name = "proxy">The proxy.</param>
+		/// <param name = "result">The asynchronous result.</param>
+		/// <param name = "out1">The additional result.</param>
+		/// <param name = "out2">The additional result.</param>
+		/// <param name = "out3">The additional result.</param>
+		/// <param name = "out4">The additional result.</param>
 		public static void EndWcfCall<TOut1, TOut2, TOut3, TOut4>(
 			this object proxy, IAsyncResult result, out TOut1 out1, TOut2 out2, TOut3 out3, TOut4 out4)
 		{
@@ -280,7 +279,7 @@ namespace Castle.Facilities.WcfIntegration
 			if (call == null)
 			{
 				throw new ArgumentException("The supplied result is not the correct type.  " +
-					" Did you obtain it from a call to BeginWcfCall<TResult>?");
+				                            " Did you obtain it from a call to BeginWcfCall<TResult>?");
 			}
 			return call;
 		}
@@ -291,7 +290,7 @@ namespace Castle.Facilities.WcfIntegration
 			if (call == null)
 			{
 				throw new ArgumentException("The supplied result is not the correct type.  " +
-					" Did you obtain it from a call to BeginWcfCall?");
+				                            " Did you obtain it from a call to BeginWcfCall?");
 			}
 			return call;
 		}

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,52 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System;
 	using System.ServiceModel;
 	using System.ServiceModel.Description;
 	using System.ServiceModel.Dispatcher;
+
 	using Castle.Core;
+	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.MicroKernel;
 
-	internal abstract class WcfExplicitExtension : AbstractWcfExtension, 
-		IWcfServiceExtension, IWcfChannelExtension, IWcfEndpointExtension
+	internal abstract class WcfExplicitExtension : AbstractWcfExtension,
+	                                               IWcfServiceExtension, IWcfChannelExtension, IWcfEndpointExtension
 	{
 		private object instance;
 
-		#region IWcfServiceExtension
-
-		public void Install(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
-		{
-			object extension = GetInstance(kernel, burden);
-
-			if (extension is IServiceBehavior)
-			{
-				serviceHost.Description.Behaviors.Add((IServiceBehavior)extension);
-			}
-			else if (extension is IServiceHostAware)
-			{
-				WcfUtils.BindServiceHostAware(serviceHost, (IServiceHostAware)extension, true);
-			}
-			else if (extension is IErrorHandler)
-			{
-				WcfUtils.RegisterErrorHandler(serviceHost, (IErrorHandler)extension, true);
-			}
-			else if (extension is IExtension<ServiceHostBase>)
-			{
-				serviceHost.Extensions.Add((IExtension<ServiceHostBase>)extension);
-			}
-			else
-			{
-				WcfUtils.AttachExtension(serviceHost.Description.Behaviors, extension);
-			}
-		}
-
-		#endregion
-
-		#region IWcfChannelExtension Members
+		protected abstract object ResolveExtension(IKernel kernel);
 
 		public void Install(ChannelFactory channelFactory, IKernel kernel, IWcfBurden burden)
 		{
@@ -68,10 +41,6 @@ namespace Castle.Facilities.WcfIntegration
 				WcfUtils.BindChannelFactoryAware(channelFactory, (IChannelFactoryAware)extension, true);
 			}
 		}
-
-		#endregion
-
-		#region IWcfEndpointExtension 
 
 		public void Install(ServiceEndpoint endpoint, bool withContract, IKernel kernel, IWcfBurden burden)
 		{
@@ -122,7 +91,38 @@ namespace Castle.Facilities.WcfIntegration
 			}
 		}
 
-		#endregion
+		public override void Accept(IWcfExtensionVisitor visitor)
+		{
+			visitor.VisitServiceExtension(this);
+			visitor.VisitChannelExtension(this);
+			visitor.VisitEndpointExtension(this);
+		}
+
+		public void Install(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
+		{
+			var extension = GetInstance(kernel, burden);
+
+			if (extension is IServiceBehavior)
+			{
+				serviceHost.Description.Behaviors.Add((IServiceBehavior)extension);
+			}
+			else if (extension is IServiceHostAware)
+			{
+				WcfUtils.BindServiceHostAware(serviceHost, (IServiceHostAware)extension, true);
+			}
+			else if (extension is IErrorHandler)
+			{
+				WcfUtils.RegisterErrorHandler(serviceHost, (IErrorHandler)extension, true);
+			}
+			else if (extension is IExtension<ServiceHostBase>)
+			{
+				serviceHost.Extensions.Add((IExtension<ServiceHostBase>)extension);
+			}
+			else
+			{
+				WcfUtils.AttachExtension(serviceHost.Description.Behaviors, extension);
+			}
+		}
 
 		private object GetInstance(IKernel kernel, IWcfBurden burden)
 		{
@@ -133,8 +133,6 @@ namespace Castle.Facilities.WcfIntegration
 			}
 			return instance;
 		}
-
-		protected abstract object ResolveExtension(IKernel kernel);
 
 		internal static IWcfExtension CreateFrom(object extension)
 		{
@@ -155,13 +153,6 @@ namespace Castle.Facilities.WcfIntegration
 				return new WcfInstanceExtension(extension);
 			}
 		}
-
-		override public void Accept(IWcfExtensionVisitor visitor)
-		{
-			visitor.VisitServiceExtension(this);
-			visitor.VisitChannelExtension(this);
-			visitor.VisitEndpointExtension(this);
-		}
 	}
 
 	#region Class: WcfServiceKeyExtension
@@ -175,14 +166,14 @@ namespace Castle.Facilities.WcfIntegration
 
 		public string Key { get; private set; }
 
-		protected override object ResolveExtension(IKernel kernel)
-		{
-			return kernel.Resolve(Key, WcfUtils.EmptyArguments);
-		}
-
 		public override void AddDependencies(IKernel kernel, ComponentModel model)
 		{
 			WcfUtils.AddExtensionDependency(Key, null, model);
+		}
+
+		protected override object ResolveExtension(IKernel kernel)
+		{
+			return kernel.Resolve(Key, WcfUtils.EmptyArguments);
 		}
 	}
 
@@ -199,14 +190,14 @@ namespace Castle.Facilities.WcfIntegration
 
 		public Type ServiceType { get; private set; }
 
-		protected override object ResolveExtension(IKernel kernel)
-		{
-			return kernel.Resolve(ServiceType);
-		}
-
 		public override void AddDependencies(IKernel kernel, ComponentModel model)
 		{
 			WcfUtils.AddExtensionDependency(null, ServiceType, model);
+		}
+
+		protected override object ResolveExtension(IKernel kernel)
+		{
+			return kernel.Resolve(ServiceType);
 		}
 	}
 

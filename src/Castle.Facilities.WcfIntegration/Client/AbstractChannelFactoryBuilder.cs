@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.ServiceModel;
@@ -20,14 +20,14 @@ namespace Castle.Facilities.WcfIntegration
 	public abstract class AbstractChannelFactoryBuilder<M> : IChannelFactoryBuilder<M>
 		where M : IWcfClientModel
 	{
+		public abstract ChannelFactory CreateChannelFactory(Type channelFactoryType, M clientModel,
+		                                                    params object[] constructorArgs);
+
 		public T CreateChannelFactory<T>(M clientModel, params object[] constructorArgs)
 			where T : ChannelFactory
 		{
 			return (T)CreateChannelFactory(typeof(T), clientModel, constructorArgs);
 		}
-
-		public abstract ChannelFactory CreateChannelFactory(Type channelFactoryType, M clientModel,
-															params object[] constructorArgs);
 
 		protected void EnsureValidChannelFactoryType(Type channelFactoryType)
 		{

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,41 +16,46 @@ namespace Castle.Facilities.WcfIntegration.Tests
 {
 	using System;
 	using System.ServiceModel;
+
 	using Castle.Facilities.WcfIntegration.Demo;
+	using Castle.Facilities.WcfIntegration.Service;
+	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;
+
 	using NUnit.Framework;
 
 	[TestFixture]
 	public class ServiceHostFactoryFixture
 	{
 		[Test]
+		[Ignore("This test requires the Castle.Facilities.WcfIntegration.Demo running")]
+		public void CanCallHostedService()
+		{
+			var client = ChannelFactory<IAmUsingWindsor>.CreateChannel(
+				new BasicHttpBinding(), new EndpointAddress("http://localhost:27197/UsingWindsorWithoutConfig.svc"));
+			Assert.AreEqual(42, client.GetValueFromWindsorConfig());
+		}
+
+		[Test]
 		public void CanCreateServiceByName()
 		{
-			IWindsorContainer windsorContainer = new WindsorContainer()
+			var windsorContainer = new WindsorContainer()
 				.Register(Component.For<IOperations>().ImplementedBy<Operations>().Named("operations"),
-						  Component.For<IServiceHostBuilder<DefaultServiceModel>>().ImplementedBy<DefaultServiceHostBuilder>()
-						  );
+				          Component.For<IServiceHostBuilder<DefaultServiceModel>>().ImplementedBy<DefaultServiceHostBuilder>()
+				);
 
-			DefaultServiceHostFactory factory = new DefaultServiceHostFactory(windsorContainer.Kernel);
-			ServiceHostBase serviceHost = factory.CreateServiceHost("operations", 
-				new Uri[] {new Uri("http://localhost/Foo.svc")});
+			var factory = new DefaultServiceHostFactory(windsorContainer.Kernel);
+			var serviceHost = factory.CreateServiceHost("operations",
+			                                            new[] { new Uri("http://localhost/Foo.svc") });
 			Assert.IsNotNull(serviceHost);
 		}
 
 		[Test]
 		public void CanCreateWindsorHostFactory()
 		{
-			DefaultServiceHostFactory factory = new DefaultServiceHostFactory(new WindsorContainer().Kernel);
+			var factory = new DefaultServiceHostFactory(new WindsorContainer().Kernel);
 			Assert.IsNotNull(factory);
-		}
-
-		[Test, Ignore("This test requires the Castle.Facilities.WcfIntegration.Demo running")]
-		public void CanCallHostedService()
-		{
-			IAmUsingWindsor client = ChannelFactory<IAmUsingWindsor>.CreateChannel(
-				new BasicHttpBinding(), new EndpointAddress("http://localhost:27197/UsingWindsorWithoutConfig.svc"));
-			Assert.AreEqual(42, client.GetValueFromWindsorConfig());
 		}
 	}
 }

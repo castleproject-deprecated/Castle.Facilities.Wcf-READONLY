@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Behaviors
+namespace Castle.Facilities.WcfIntegration.Behaviors.Security
 {
 	using System.ServiceModel.Description;
 
 	public class UserNameCredentials : AbstractCredentials
 	{
 		public UserNameCredentials()
-		{	
+		{
 		}
 
 		public UserNameCredentials(string userName, string password)
@@ -28,14 +28,13 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			Password = password;
 		}
 
-		public string UserName { get; set; }
-
 		public string Password { get; set; }
+		public string UserName { get; set; }
 
 		protected override void ConfigureCredentials(ClientCredentials credentials)
 		{
 			credentials.UserName.UserName = UserName;
 			credentials.UserName.Password = Password;
 		}
-	} 
+	}
 }

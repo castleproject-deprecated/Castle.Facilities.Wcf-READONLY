@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,24 +18,24 @@ namespace Castle.Facilities.WcfIntegration
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// Contract for all WCF endpoints.
+	///   Contract for all WCF endpoints.
 	/// </summary>
 	public interface IWcfEndpoint
 	{
 		/// <summary>
-		/// Gets the endpoint contract.
+		///   Gets the endpoint contract.
 		/// </summary>
 		Type Contract { get; set; }
 
 		/// <summary>
-		/// Gets the endpoint extensions.
+		///   Gets the endpoint extensions.
 		/// </summary>
 		ICollection<IWcfExtension> Extensions { get; }
 
 		/// <summary>
-		/// Supports management of endpoints.
+		///   Supports management of endpoints.
 		/// </summary>
-		/// <param name="visitor"></param>
+		/// <param name = "visitor"></param>
 		void Accept(IWcfEndpointVisitor visitor);
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.ServiceModel;
 	using System.ServiceModel.Activation;
+
 	using Castle.Core;
-	using Castle.MicroKernel;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.MicroKernel;
 
 	public class WindsorServiceHostFactory<M> : ServiceHostFactory
 		where M : IWcfServiceModel
@@ -35,7 +36,7 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			if (kernel == null)
 			{
-				string message = "Kernel was null, did you forgot to call DefaultServiceHostFactory.RegisterContainer() ?";
+				var message = "Kernel was null, did you forgot to call DefaultServiceHostFactory.RegisterContainer() ?";
 				throw new ArgumentNullException("kernel", message);
 			}
 
@@ -66,7 +67,7 @@ namespace Castle.Facilities.WcfIntegration
 			{
 				throw new InvalidOperationException(
 					string.Format("Could not find a component with {0} {1}, did you forget to register it?",
-					constructorStringType, constructorString));
+					              constructorStringType, constructorString));
 			}
 
 			var model = handler.ComponentModel;

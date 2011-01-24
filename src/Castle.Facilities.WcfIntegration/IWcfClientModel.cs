@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,33 +18,33 @@ namespace Castle.Facilities.WcfIntegration
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// Contract for all WCF client models.
+	///   Contract for all WCF client models.
 	/// </summary>
 	public interface IWcfClientModel
 	{
 		/// <summary>
-		/// Gets the endpoint contract.
+		///   Gets the endpoint contract.
 		/// </summary>
 		Type Contract { get; }
 
 		/// <summary>
-		/// Gets the endpoint of the service.
+		///   Gets the endpoint of the service.
 		/// </summary>
 		IWcfEndpoint Endpoint { get; }
 
 		/// <summary>
-		/// Determines if async capability is desired.
-		/// </summary>
-		bool WantsAsyncCapability { get; }
-
-		/// <summary>
-		/// Gets the service extensions.
+		///   Gets the service extensions.
 		/// </summary>
 		ICollection<IWcfExtension> Extensions { get; }
 
 		/// <summary>
-		/// Creates a copy of the <see cref="IWcfClientModel"/>
-		/// using the supplied endpoint.
+		///   Determines if async capability is desired.
+		/// </summary>
+		bool WantsAsyncCapability { get; }
+
+		/// <summary>
+		///   Creates a copy of the <see cref = "IWcfClientModel" />
+		///   using the supplied endpoint.
 		/// </summary>
 		/// <returns>The client model copy.</returns>
 		IWcfClientModel ForEndpoint(IWcfEndpoint endpoint);

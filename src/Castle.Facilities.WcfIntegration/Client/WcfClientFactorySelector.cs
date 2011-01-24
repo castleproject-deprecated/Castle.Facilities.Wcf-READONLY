@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.Collections.Specialized;
 	using System.Reflection;
+
 	using Castle.Facilities.TypedFactory;
 	using Castle.MicroKernel;
 
@@ -27,9 +28,7 @@ namespace Castle.Facilities.WcfIntegration
 			return new ClientComponent(method.ReturnType, arguments);
 		}
 
-		#region Nested Class: ClientComponent
-
-		class ClientComponent : TypedFactoryComponent
+		private class ClientComponent : TypedFactoryComponent
 		{
 			private readonly object[] arguments;
 
@@ -69,7 +68,5 @@ namespace Castle.Facilities.WcfIntegration
 				return kernel.Resolve(key, ComponentType, args);
 			}
 		}
-
-		#endregion
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Behaviors
+namespace Castle.Facilities.WcfIntegration.Behaviors.Lifecyle
 {
 	using System.Collections;
 	using System.IO;
@@ -24,10 +24,56 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 	using System.Xml;
 
 	public class MessageLifecycleBehavior<T> : AbstractExtensibleObject<T>,
-		IEndpointBehavior, IClientMessageInspector, IDispatchMessageInspector 
+	                                           IEndpointBehavior, IClientMessageInspector, IDispatchMessageInspector
 		where T : MessageLifecycleBehavior<T>
 	{
-		#region IEndpointBehavior Members 
+		/// <summary>
+		///   Processes the client response.
+		/// </summary>
+		/// <param name = "reply">The client response.</param>
+		/// <param name = "correlationState"></param>
+		public virtual void AfterReceiveReply(ref Message reply, object correlationState)
+		{
+			ProcessMessage(ref reply, MessageLifecycle.IncomingResponse, (IDictionary)correlationState);
+		}
+
+		/// <summary>
+		///   Processes the client request.
+		/// </summary>
+		/// <param name = "request">The client request.</param>
+		/// <param name = "channel"></param>
+		/// <returns></returns>
+		public virtual object BeforeSendRequest(ref Message request, IClientChannel channel)
+		{
+			var state = new Hashtable();
+			ProcessMessage(ref request, MessageLifecycle.OutgoingRequest, state);
+			return state;
+		}
+
+		/// <summary>
+		///   Processes the server request.
+		/// </summary>
+		/// <param name = "request">The server request.</param>
+		/// <param name = "channel"></param>
+		/// <param name = "instanceContext"></param>
+		/// <returns></returns>
+		public virtual object AfterReceiveRequest(ref Message request, IClientChannel channel,
+		                                          InstanceContext instanceContext)
+		{
+			var state = new Hashtable();
+			ProcessMessage(ref request, MessageLifecycle.IncomingRequest, state);
+			return state;
+		}
+
+		/// <summary>
+		///   Processes the server response.
+		/// </summary>
+		/// <param name = "reply">The server response.</param>
+		/// <param name = "correlationState"></param>
+		public virtual void BeforeSendReply(ref Message reply, object correlationState)
+		{
+			ProcessMessage(ref reply, MessageLifecycle.OutgoingResponse, (IDictionary)correlationState);
+		}
 
 		public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
 		{
@@ -47,64 +93,6 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 		{
 		}
 
-		#endregion
-
-		#region IClientMessageInspector Members
-
-		/// <summary>
-		/// Processes the client response.
-		/// </summary>
-		/// <param name="reply">The client response.</param>
-		/// <param name="correlationState"></param>
-		public virtual void AfterReceiveReply(ref Message reply, object correlationState)
-		{
-			ProcessMessage(ref reply, MessageLifecycle.IncomingResponse, (IDictionary)correlationState);
-		}
-
-		/// <summary>
-		/// Processes the client request.
-		/// </summary>
-		/// <param name="request">The client request.</param>
-		/// <param name="channel"></param>
-		/// <returns></returns>
-		public virtual object BeforeSendRequest(ref Message request, IClientChannel channel)
-		{
-			Hashtable state = new Hashtable();
-			ProcessMessage(ref request, MessageLifecycle.OutgoingRequest, state);
-			return state;
-		}
-
-		#endregion
-
-		#region IDispatchMessageInspector Members
-
-		/// <summary>
-		/// Processes the server request.
-		/// </summary>
-		/// <param name="request">The server request.</param>
-		/// <param name="channel"></param>
-		/// <param name="instanceContext"></param>
-		/// <returns></returns>
-		public virtual object AfterReceiveRequest(ref Message request, IClientChannel channel,
-												  InstanceContext instanceContext)
-		{
-			Hashtable state = new Hashtable();
-			ProcessMessage(ref request, MessageLifecycle.IncomingRequest, state);
-			return state;
-		}
-
-		/// <summary>
-		/// Processes the server response.
-		/// </summary>
-		/// <param name="reply">The server response.</param>
-		/// <param name="correlationState"></param>
-		public virtual void BeforeSendReply(ref Message reply, object correlationState)
-		{
-			ProcessMessage(ref reply, MessageLifecycle.OutgoingResponse, (IDictionary)correlationState);
-		}
-
-		#endregion
-
 		protected void ProcessMessage(ref Message message, MessageLifecycle lifecycle, IDictionary state)
 		{
 			XmlDocument envelope = null;
@@ -115,9 +103,12 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			{
 				foreach (var action in actions.OrderBy(a => a.ExecutionOrder))
 				{
-					bool proceed = true;
+					var proceed = true;
 
-					if (action.ShouldPerform(lifecycle) == false) continue;
+					if (action.ShouldPerform(lifecycle) == false)
+					{
+						continue;
+					}
 
 					if (action is IMessageEnvelopeAction)
 					{
@@ -143,7 +134,10 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 						proceed = messageAction.Perform(ref message, lifecycle, state);
 					}
 
-					if (proceed == false) break;
+					if (proceed == false)
+					{
+						break;
+					}
 				}
 
 				if (envelope != null)
@@ -153,29 +147,16 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			}
 		}
 
-		private XmlDocument OpenMessage(Message message)
-		{
-			MemoryStream stream = new MemoryStream();
-			XmlWriter writer = XmlWriter.Create(stream);
-			message.WriteMessage(writer);
-			writer.Flush();
-			stream.Position = 0;
-
-			XmlDocument envelope = new XmlDocument();
-			envelope.Load(stream);
-			return envelope;
-		}
-
 		private Message CloseMessage(Message message, XmlDocument envelope)
 		{
-			MemoryStream stream = new MemoryStream();
+			var stream = new MemoryStream();
 			XmlWriter writer = XmlDictionaryWriter.CreateBinaryWriter(stream);
 			envelope.WriteTo(writer);
 			writer.Flush();
 			stream.Position = 0;
 
 			XmlReader reader = XmlDictionaryReader.CreateBinaryReader(stream,
-				new XmlDictionaryReaderQuotas());
+			                                                          new XmlDictionaryReaderQuotas());
 			var newMessage = Message.CreateMessage(reader, int.MaxValue, message.Version);
 			newMessage.Headers.Clear();
 			newMessage.Headers.CopyHeadersFrom(message);
@@ -186,6 +167,19 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 			}
 
 			return newMessage;
+		}
+
+		private XmlDocument OpenMessage(Message message)
+		{
+			var stream = new MemoryStream();
+			var writer = XmlWriter.Create(stream);
+			message.WriteMessage(writer);
+			writer.Flush();
+			stream.Position = 0;
+
+			var envelope = new XmlDocument();
+			envelope.Load(stream);
+			return envelope;
 		}
 	}
 

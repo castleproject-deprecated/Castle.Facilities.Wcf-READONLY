@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,29 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Rest
+namespace Castle.Facilities.WcfIntegration.Service.Rest
 {
 	using System;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
+
 	using Castle.Core;
 	using Castle.MicroKernel;
 
 	/// <summary>
-	/// Implementation of <see cref="IServiceHostBuilder{M}"/>. for restful services.
+	///   Implementation of <see cref = "IServiceHostBuilder{M}" />. for restful services.
 	/// </summary>
 	public class RestServiceHostBuilder : AbstractServiceHostBuilder<RestServiceModel>
 	{
 		/// <summary>
-		/// Constructs a new <see cref="RestServiceHostBuilder"/>.
+		///   Constructs a new <see cref = "RestServiceHostBuilder" />.
 		/// </summary>
-		/// <param name="kernel">The kernel.</param>
+		/// <param name = "kernel">The kernel.</param>
 		public RestServiceHostBuilder(IKernel kernel)
 			: base(kernel)
 		{
 		}
 
-		#region AbstractServiceHostBuilder Members
+		protected override ServiceHost CreateServiceHost(ComponentModel model, RestServiceModel serviceModel,
+		                                                 params Uri[] baseAddresses)
+		{
+			return CreateRestServiceHost(model.Implementation,
+			                             GetEffectiveBaseAddresses(serviceModel, baseAddresses));
+		}
+
+		protected override ServiceHost CreateServiceHost(ComponentModel model, params Uri[] baseAddresses)
+		{
+			return CreateRestServiceHost(model.Implementation, baseAddresses);
+		}
+
+		protected override ServiceHost CreateServiceHost(Type serviceType, params Uri[] baseAddresses)
+		{
+			return CreateRestServiceHost(serviceType, baseAddresses);
+		}
 
 		protected override Binding GetDefaultBinding(ServiceHost serviceHost, string address)
 		{
@@ -45,25 +61,6 @@ namespace Castle.Facilities.WcfIntegration.Rest
 			}
 			return binding;
 		}
-
-		protected override ServiceHost CreateServiceHost(ComponentModel model, RestServiceModel serviceModel,
-														 params Uri[] baseAddresses)
-		{
-			return CreateRestServiceHost(model.Implementation, 
-				GetEffectiveBaseAddresses(serviceModel, baseAddresses));
-		}
-
-		protected override ServiceHost CreateServiceHost(ComponentModel model, params Uri[] baseAddresses)
-		{
-			return CreateRestServiceHost(model.Implementation, baseAddresses);
-		}
-
-		protected override ServiceHost CreateServiceHost(Type serviceType,  params Uri[] baseAddresses)
-		{
-			return CreateRestServiceHost(serviceType, baseAddresses);
-		}
-
-		#endregion
 
 		private RestServiceHost CreateRestServiceHost(Type serviceType, Uri[] baseAddresses)
 		{

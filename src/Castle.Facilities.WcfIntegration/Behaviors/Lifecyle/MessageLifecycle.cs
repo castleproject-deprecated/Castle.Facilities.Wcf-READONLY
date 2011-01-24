@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,56 +12,70 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-
-/// <summary>
-/// Specifies the lifecycle of a message.
-/// </summary>
-[Flags]
-public enum MessageLifecycle
+namespace Castle.Facilities.WcfIntegration.Behaviors.Lifecyle
 {
+	using System;
+
 	/// <summary>
-	/// The outgoing request.
+	///   Specifies the lifecycle of a message.
 	/// </summary>
-	OutgoingRequest = 0x01,
-	/// <summary>
-	/// The incoming response.
-	/// </summary>
-	IncomingResponse = 0x02,
-	/// <summary>
-	/// The outgoing request.
-	/// </summary>
-	IncomingRequest = 0x04,
-	/// <summary>
-	/// The incoming response.
-	/// </summary>
-	OutgoingResponse = 0x08,
-	/// <summary>
-	/// All incoming messages.
-	/// </summary>
-	IncomingMessages = IncomingRequest | IncomingResponse,
-	/// <summary>
-	/// All outgoing messages.
-	/// </summary>
-	OutgoingMessages = OutgoingRequest | OutgoingResponse,
-	/// <summary>
-	/// A solitic/response exchange.
-	/// </summary>
-	OutgoingRequestResponse = OutgoingRequest | IncomingResponse,
-	/// <summary>
-	/// A request/response exchange.
-	/// </summary>
-	IncomingRequestResponse = IncomingRequest | OutgoingResponse,
-	/// <summary>
-	/// All requests.
-	/// </summary>
-	Requests = IncomingRequest | OutgoingRequest,
-	/// <summary>
-	/// All requests.
-	/// </summary>
-	Responses = IncomingResponse | OutgoingResponse,
-	/// <summary>
-	/// All message.
-	/// </summary>,
-	All = IncomingMessages | OutgoingMessages
+	[Flags]
+	public enum MessageLifecycle
+	{
+		/// <summary>
+		///   The outgoing request.
+		/// </summary>
+		OutgoingRequest = 0x01,
+
+		/// <summary>
+		///   The incoming response.
+		/// </summary>
+		IncomingResponse = 0x02,
+
+		/// <summary>
+		///   The outgoing request.
+		/// </summary>
+		IncomingRequest = 0x04,
+
+		/// <summary>
+		///   The incoming response.
+		/// </summary>
+		OutgoingResponse = 0x08,
+
+		/// <summary>
+		///   All incoming messages.
+		/// </summary>
+		IncomingMessages = IncomingRequest | IncomingResponse,
+
+		/// <summary>
+		///   All outgoing messages.
+		/// </summary>
+		OutgoingMessages = OutgoingRequest | OutgoingResponse,
+
+		/// <summary>
+		///   A solitic/response exchange.
+		/// </summary>
+		OutgoingRequestResponse = OutgoingRequest | IncomingResponse,
+
+		/// <summary>
+		///   A request/response exchange.
+		/// </summary>
+		IncomingRequestResponse = IncomingRequest | OutgoingResponse,
+
+		/// <summary>
+		///   All requests.
+		/// </summary>
+		Requests = IncomingRequest | OutgoingRequest,
+
+		/// <summary>
+		///   All requests.
+		/// </summary>
+		Responses = IncomingResponse | OutgoingResponse,
+
+		/// <summary>
+		///   All message.
+		/// </summary>
+		/// ,
+		All = IncomingMessages | OutgoingMessages
+	}
 }

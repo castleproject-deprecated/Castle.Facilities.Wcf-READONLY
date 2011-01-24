@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10,12 +10,16 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
+// limitations under the License.
 
 namespace Castle.Facilities.WcfIntegration
 {
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.ServiceModel.Description;
+
+	using Castle.Facilities.WcfIntegration.Client.Default;
+	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.MicroKernel.Registration;
 
 	public static class WcfIntegrationExtensions
@@ -38,7 +42,7 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		public static ComponentRegistration<T> AsWcfClient<T>(this ComponentRegistration<T> registration,
-															  params IWcfClientModel[] clientModels)
+		                                                      params IWcfClientModel[] clientModels)
 		{
 			return registration.ActAs(clientModels);
 		}
@@ -54,7 +58,7 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		public static ComponentRegistration<T> AsWcfService<T>(this ComponentRegistration<T> registration,
-															   params IWcfServiceModel[] serviceModels)
+		                                                       params IWcfServiceModel[] serviceModels)
 		{
 			return registration.ActAs(serviceModels);
 		}

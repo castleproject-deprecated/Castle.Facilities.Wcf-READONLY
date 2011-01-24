@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 	using System.Reflection;
@@ -24,20 +24,10 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 	{
 		private readonly ParameterInfo[] parameters;
 
-		public BeginMethod(MethodInfo syncMethod, AsyncType type) 
+		public BeginMethod(MethodInfo syncMethod, AsyncType type)
 			: base(syncMethod, type)
 		{
 			parameters = ObtainParameters(syncMethod);
-		}
-
-		public override string Name
-		{
-			get { return "Begin" + SyncMethod.Name; }
-		}
-
-		public override Type ReturnType
-		{
-			get { return typeof(IAsyncResult); }
 		}
 
 		public override Type DeclaringType
@@ -51,13 +41,14 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			}
 		}
 
-		private ParameterInfo[] ObtainParameters(MethodInfo syncMethod)
+		public override string Name
 		{
-			var parameters = syncMethod.GetParameters();
-			Array.Resize(ref parameters, parameters.Length + 2);
-			parameters[parameters.Length - 2] = new AsyncMethodParameter(typeof(AsyncCallback), this);
-			parameters[parameters.Length - 1] = new AsyncMethodParameter(typeof(object), this);
-			return parameters;
+			get { return "Begin" + SyncMethod.Name; }
+		}
+
+		public override Type ReturnType
+		{
+			get { return typeof(IAsyncResult); }
 		}
 
 		public override object[] GetCustomAttributes(Type attributeType, bool inherit)
@@ -71,8 +62,8 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			}
 
 			if (typeof(IOperationBehavior).IsAssignableFrom(attributeType) ||
-				attributeType == typeof(ServiceKnownTypeAttribute) ||
-				attributeType == typeof(FaultContractAttribute))
+			    attributeType == typeof(ServiceKnownTypeAttribute) ||
+			    attributeType == typeof(FaultContractAttribute))
 			{
 				return new object[0];
 			}
@@ -82,6 +73,15 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 
 		public override ParameterInfo[] GetParameters()
 		{
+			return parameters;
+		}
+
+		private ParameterInfo[] ObtainParameters(MethodInfo syncMethod)
+		{
+			var parameters = syncMethod.GetParameters();
+			Array.Resize(ref parameters, parameters.Length + 2);
+			parameters[parameters.Length - 2] = new AsyncMethodParameter(typeof(AsyncCallback), this);
+			parameters[parameters.Length - 1] = new AsyncMethodParameter(typeof(object), this);
 			return parameters;
 		}
 	}

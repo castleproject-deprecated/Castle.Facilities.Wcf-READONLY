@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,20 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Description;
+
 	using Castle.Facilities.WcfIntegration.Internal;
 	using Castle.MicroKernel;
 
 	public abstract class AbstractChannelBuilder<M> : AbstractChannelBuilder, IChannelBuilder<M>
-			where M : IWcfClientModel
+		where M : IWcfClientModel
 	{
-		[ThreadStatic] private static M ClientModel;
-		[ThreadStatic] private static IWcfBurden Burden;
+		[ThreadStatic]
+		private static IWcfBurden Burden;
+
+		[ThreadStatic]
+		private static M ClientModel;
 
 		protected AbstractChannelBuilder(IKernel kernel, IChannelFactoryBuilder<M> channelFactoryBuilder)
 			: base(kernel)
@@ -36,11 +40,11 @@ namespace Castle.Facilities.WcfIntegration
 		protected IChannelFactoryBuilder<M> ChannelFactoryBuilder { get; private set; }
 
 		/// <summary>
-		/// Get a delegate capable of creating channels.
+		///   Get a delegate capable of creating channels.
 		/// </summary>
-		/// <param name="clientModel">The client model.</param>
-		/// <param name="burden">Receives the client burden.</param>
-		/// <returns>The <see cref="ChannelCreator"/></returns>
+		/// <param name = "clientModel">The client model.</param>
+		/// <param name = "burden">Receives the client burden.</param>
+		/// <returns>The <see cref = "ChannelCreator" /></returns>
 		public ChannelCreator GetChannelCreator(M clientModel, out IWcfBurden burden)
 		{
 			ClientModel = clientModel;
@@ -49,12 +53,12 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <summary>
-		/// Get a delegate capable of creating channels.
+		///   Get a delegate capable of creating channels.
 		/// </summary>
-		/// <param name="clientModel">The client model.</param>
-		/// <param name="contract">The contract override.</param>
-		/// <param name="burden">Receives the client burden.</param>
-		/// <returns>The <see cref="ChannelCreator"/></returns>
+		/// <param name = "clientModel">The client model.</param>
+		/// <param name = "contract">The contract override.</param>
+		/// <param name = "burden">Receives the client burden.</param>
+		/// <returns>The <see cref = "ChannelCreator" /></returns>
 		public ChannelCreator GetChannelCreator(M clientModel, Type contract, out IWcfBurden burden)
 		{
 			ClientModel = clientModel;
@@ -67,7 +71,15 @@ namespace Castle.Facilities.WcfIntegration
 			ConfigureChannelFactory(channelFactory, ClientModel, Burden);
 		}
 
-		#region AbstractChannelBuilder Members
+		protected virtual ChannelCreator CreateChannelCreator(Type contract, M clientModel, params object[] channelFactoryArgs)
+		{
+			var type = typeof(ChannelFactory<>).MakeGenericType(new[] { contract });
+			var channelFactory = ChannelFactoryBuilder.CreateChannelFactory(type, clientModel, channelFactoryArgs);
+			ConfigureChannelFactory(channelFactory);
+
+			var methodInfo = type.GetMethod("CreateChannel", new Type[0]);
+			return (ChannelCreator)Delegate.CreateDelegate(typeof(ChannelCreator), channelFactory, methodInfo);
+		}
 
 		protected override ChannelCreator GetChannel(Type contract)
 		{
@@ -94,10 +106,6 @@ namespace Castle.Facilities.WcfIntegration
 			return GetChannel(ClientModel, contract, binding, address);
 		}
 
-		#endregion
-
-		#region GetChannel Members
-
 		protected virtual ChannelCreator GetChannel(M clientModel, Type contract)
 		{
 			return CreateChannelCreator(contract, clientModel, contract);
@@ -121,18 +129,6 @@ namespace Castle.Facilities.WcfIntegration
 		protected virtual ChannelCreator GetChannel(M clientModel, Type contract, Binding binding, EndpointAddress address)
 		{
 			return CreateChannelCreator(contract, clientModel, binding, address);
-		}
-
-		#endregion
-
-		protected virtual ChannelCreator CreateChannelCreator(Type contract, M clientModel, params object[] channelFactoryArgs)
-		{
-			var type = typeof(ChannelFactory<>).MakeGenericType(new Type[] { contract });
-			var channelFactory = ChannelFactoryBuilder.CreateChannelFactory(type, clientModel, channelFactoryArgs);
-			ConfigureChannelFactory(channelFactory);
-
-			var methodInfo = type.GetMethod("CreateChannel", new Type[0]);
-			return (ChannelCreator)Delegate.CreateDelegate(typeof(ChannelCreator), channelFactory, methodInfo);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Rest
 {
 	using System;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Web;
+
 	using Castle.MicroKernel;
 
 	public class RestChannelBuilder : AbstractChannelBuilder<RestClientModel>
@@ -27,13 +28,19 @@ namespace Castle.Facilities.WcfIntegration
 		{
 		}
 
-		protected override Binding InferBinding(Uri address)
+		protected override ChannelCreator CreateChannelCreator(Type contract, RestClientModel clientModel,
+		                                                       params object[] channelFactoryArgs)
 		{
-			return null;
+			var type = typeof(WebChannelFactory<>).MakeGenericType(new[] { contract });
+			var channelFactory = ChannelFactoryBuilder.CreateChannelFactory(type, clientModel, channelFactoryArgs);
+			ConfigureChannelFactory(channelFactory);
+
+			var methodInfo = type.GetMethod("CreateChannel", new Type[0]);
+			return (ChannelCreator)Delegate.CreateDelegate(typeof(ChannelCreator), channelFactory, methodInfo);
 		}
 
 		protected override ChannelCreator GetChannel(RestClientModel clientModel, Type contract,
-												     Binding binding, string address)
+		                                             Binding binding, string address)
 		{
 			var remoteAddress = new Uri(address, UriKind.Absolute);
 
@@ -45,21 +52,15 @@ namespace Castle.Facilities.WcfIntegration
 			return CreateChannelCreator(contract, clientModel, binding, remoteAddress);
 		}
 
-		protected override ChannelCreator GetChannel(RestClientModel clientModel, Type contract, 
-			                                         Binding binding, EndpointAddress address)
+		protected override ChannelCreator GetChannel(RestClientModel clientModel, Type contract,
+		                                             Binding binding, EndpointAddress address)
 		{
 			return GetChannel(clientModel, contract, binding, address.Uri.AbsoluteUri);
 		}
 
-		protected override ChannelCreator CreateChannelCreator(Type contract, RestClientModel clientModel,
-			                                                   params object[] channelFactoryArgs)
+		protected override Binding InferBinding(Uri address)
 		{
-			var type = typeof(WebChannelFactory<>).MakeGenericType(new[] { contract });
-			var channelFactory = ChannelFactoryBuilder.CreateChannelFactory(type, clientModel, channelFactoryArgs);
-			ConfigureChannelFactory(channelFactory);
-
-			var methodInfo = type.GetMethod("CreateChannel", new Type[0]);
-			return (ChannelCreator)Delegate.CreateDelegate(typeof(ChannelCreator), channelFactory, methodInfo);
+			return null;
 		}
 	}
 }

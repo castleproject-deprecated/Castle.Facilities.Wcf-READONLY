@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Proxy
 {
 	using System;
 	using System.Linq;
@@ -21,6 +21,7 @@ namespace Castle.Facilities.WcfIntegration
 	using System.Runtime.Remoting.Proxies;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
+
 	using Castle.Facilities.WcfIntegration.Internal;
 
 	public class WcfChannelHolder : IWcfChannelHolder
@@ -36,34 +37,19 @@ namespace Castle.Facilities.WcfIntegration
 			CreateChannel();
 		}
 
+		public TimeSpan? CloseTimeout { get; private set; }
+
 		public IChannel Channel { get; private set; }
 
-		public RealProxy RealProxy { get; private set; }
-
-		public ChannelFactory ChannelFactory { get; private set; }
-
 		public IWcfBurden ChannelBurden { get; private set; }
-
-		public TimeSpan? CloseTimeout { get; private set; }
+		public ChannelFactory ChannelFactory { get; private set; }
 
 		public bool IsChannelUsable
 		{
 			get { return WcfUtils.IsCommunicationObjectReady(Channel); }
 		}
 
-		[MethodImpl(MethodImplOptions.Synchronized)]
-		public void RefreshChannel()
-		{
-			if (Channel == null || IsChannelUsable == false)
-			{
-				if (Channel != null)
-				{
-					WcfUtils.ReleaseCommunicationObject(Channel, CloseTimeout);
-				}
-
-				CreateChannel();
-			}
-		}
+		public RealProxy RealProxy { get; private set; }
 
 		public void Dispose()
 		{
@@ -88,6 +74,20 @@ namespace Castle.Facilities.WcfIntegration
 			if (Channel != null)
 			{
 				WcfUtils.ReleaseCommunicationObject(Channel, CloseTimeout);
+			}
+		}
+
+		[MethodImpl(MethodImplOptions.Synchronized)]
+		public void RefreshChannel()
+		{
+			if (Channel == null || IsChannelUsable == false)
+			{
+				if (Channel != null)
+				{
+					WcfUtils.ReleaseCommunicationObject(Channel, CloseTimeout);
+				}
+
+				CreateChannel();
 			}
 		}
 

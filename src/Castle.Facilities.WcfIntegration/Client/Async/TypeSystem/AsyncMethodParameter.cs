@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 	using System.Reflection;
@@ -20,8 +20,8 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 	[Serializable]
 	public class AsyncMethodParameter : ParameterInfo
 	{
-		private readonly Type type;
 		private readonly AsyncMethod method;
+		private readonly Type type;
 
 		public AsyncMethodParameter(Type type, AsyncMethod method)
 		{

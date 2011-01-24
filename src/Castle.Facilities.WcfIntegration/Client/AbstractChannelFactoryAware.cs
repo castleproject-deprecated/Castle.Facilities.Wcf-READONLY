@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,43 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 
 	/// <summary>
-	/// Abstarct implementation of <see cref="IChannelFactoryAware"/>
+	///   Abstarct implementation of <see cref = "IChannelFactoryAware" />
 	/// </summary>
 	public abstract class AbstractChannelFactoryAware : IChannelFactoryAware
 	{
 		/// <inheritdoc />
-		public virtual void Created(ChannelFactory channelFactory)
-		{
-		}
-
-		/// <inheritdoc />
-		public virtual void Opening(ChannelFactory channelFactory)
-		{
-		}
-
-		/// <inheritdoc />
-		public virtual void Opened(ChannelFactory channelFactory)
-		{
-		}
-
-		/// <inheritdoc />
-		public virtual void Closing(ChannelFactory channelFactory)
-		{
-		}
-
-		/// <inheritdoc />
-		public virtual void Closed(ChannelFactory channelFactory)
-		{
-		}
-
-		/// <inheritdoc />
-		public virtual void Faulted(ChannelFactory channelFactory)
+		public virtual void ChannelAvailable(ChannelFactory channelFactory, IChannel channel)
 		{
 		}
 
@@ -58,7 +33,32 @@ namespace Castle.Facilities.WcfIntegration
 		}
 
 		/// <inheritdoc />
-		public virtual void ChannelAvailable(ChannelFactory channelFactory, IChannel channel)
+		public virtual void Closed(ChannelFactory channelFactory)
+		{
+		}
+
+		/// <inheritdoc />
+		public virtual void Closing(ChannelFactory channelFactory)
+		{
+		}
+
+		/// <inheritdoc />
+		public virtual void Created(ChannelFactory channelFactory)
+		{
+		}
+
+		/// <inheritdoc />
+		public virtual void Faulted(ChannelFactory channelFactory)
+		{
+		}
+
+		/// <inheritdoc />
+		public virtual void Opened(ChannelFactory channelFactory)
+		{
+		}
+
+		/// <inheritdoc />
+		public virtual void Opening(ChannelFactory channelFactory)
 		{
 		}
 	}

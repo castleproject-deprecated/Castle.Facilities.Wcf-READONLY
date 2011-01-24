@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.ServiceModel;
@@ -20,44 +20,44 @@ namespace Castle.Facilities.WcfIntegration
 
 	public static class AdHocChannelFactoryAwareExtensions
 	{
-		public static T OnCreated<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		public static T OnChannelAvailable<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory, IChannel> action) where T : WcfClientModel<T>
 		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnCreated(action));
-		}
-
-		public static T OnOpening<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
-		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnOpening(action));
-		}
-
-		public static T OnOpened<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
-		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnOpened(action));
-		}
-
-		public static T OnClosing<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
-		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnClosing(action));
-		}
-
-		public static T OnClosed<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
-		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnClosed(action));
-		}
-
-		public static T OnFaulted<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
-		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnFaulted(action));
+			return Subscribe(clientModel, adHoc => adHoc.OnChannelAvailable(action));
 		}
 
 		public static T OnChannelCreated<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory, IChannel> action) where T : WcfClientModel<T>
 		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnChannelCreated(action));
+			return Subscribe(clientModel, adHoc => adHoc.OnChannelCreated(action));
 		}
 
-		public static T OnChannelAvailable<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory, IChannel> action) where T : WcfClientModel<T>
+		public static T OnClosed<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
 		{
-			return Subscribe<T>(clientModel, adHoc => adHoc.OnChannelAvailable(action));
+			return Subscribe(clientModel, adHoc => adHoc.OnClosed(action));
+		}
+
+		public static T OnClosing<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		{
+			return Subscribe(clientModel, adHoc => adHoc.OnClosing(action));
+		}
+
+		public static T OnCreated<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		{
+			return Subscribe(clientModel, adHoc => adHoc.OnCreated(action));
+		}
+
+		public static T OnFaulted<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		{
+			return Subscribe(clientModel, adHoc => adHoc.OnFaulted(action));
+		}
+
+		public static T OnOpened<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		{
+			return Subscribe(clientModel, adHoc => adHoc.OnOpened(action));
+		}
+
+		public static T OnOpening<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory> action) where T : WcfClientModel<T>
+		{
+			return Subscribe(clientModel, adHoc => adHoc.OnOpening(action));
 		}
 
 		private static T Subscribe<T>(WcfClientModel<T> clientModel, Action<AdHocChannelFactoryAware> subscribe) where T : WcfClientModel<T>
@@ -68,4 +68,3 @@ namespace Castle.Facilities.WcfIntegration
 		}
 	}
 }
-

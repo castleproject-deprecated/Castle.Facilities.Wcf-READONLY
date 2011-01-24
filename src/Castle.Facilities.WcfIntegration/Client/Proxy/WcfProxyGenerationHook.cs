@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Proxy
+namespace Castle.Facilities.WcfIntegration.Client.Proxy
 {
 	using System;
 	using System.Reflection;
+
 	using Castle.DynamicProxy;
 
 	[Serializable]
@@ -26,54 +27,6 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 		public WcfProxyGenerationHook(IProxyGenerationHook hook)
 		{
 			this.hook = hook;
-		}
-
-
-
-		public bool ShouldInterceptMethod(Type type, MethodInfo methodInfo)
-		{
-			// NOTE: This is fixed now. This code can be uncommented and Selector does not have to have this responsibility anymore
-			// BUG: Due to... illogical behavior of DP this will produce illformed proxy types.
-			// We have to move this piece of logic to InterceptorSelector, and move it back when the bug gets fixed.
-			//if (IsChannelHolderMethod(methodInfo))
-			//{
-			//    return false;
-			//}
-
-			if (hook != null)
-			{
-				return hook.ShouldInterceptMethod(type, methodInfo);
-			}
-
-			return true;
-		}
-
-		private bool IsChannelHolderMethod(MethodInfo methodInfo)
-		{
-			return typeof(IWcfChannelHolder).IsAssignableFrom(methodInfo.DeclaringType);
-		}
-
-		public void NonProxyableMemberNotification(Type type, MemberInfo memberInfo)
-		{
-			if (hook != null)
-			{
-				//give the inner hook a chance to throw its own exception
-				hook.NonProxyableMemberNotification(type, memberInfo);
-			}
-
-			// actually we should never get this, since we're doing an interface proxy
-			// so if we do, this may mean it's a bug.
-			throw new NotSupportedException(
-				string.Format("Member {0}.{1} is non virtual hence can not be proxied. If you think it's a bug, please report it.",
-				              type.FullName, memberInfo.Name));
-		}
-
-		public void MethodsInspected()
-		{
-			if(hook!=null)
-			{
-				hook.MethodsInspected();
-			}
 		}
 
 		public override bool Equals(object obj)
@@ -99,6 +52,49 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 		public override int GetHashCode()
 		{
 			return (hook != null ? hook.GetHashCode() : 0);
+		}
+
+		public void MethodsInspected()
+		{
+			if (hook != null)
+			{
+				hook.MethodsInspected();
+			}
+		}
+
+		public void NonProxyableMemberNotification(Type type, MemberInfo memberInfo)
+		{
+			if (hook != null)
+			{
+				//give the inner hook a chance to throw its own exception
+				hook.NonProxyableMemberNotification(type, memberInfo);
+			}
+
+			// actually we should never get this, since we're doing an interface proxy
+			// so if we do, this may mean it's a bug.
+			throw new NotSupportedException(
+				string.Format("Member {0}.{1} is non virtual hence can not be proxied. If you think it's a bug, please report it.",
+				              type.FullName, memberInfo.Name));
+		}
+
+		public bool ShouldInterceptMethod(Type type, MethodInfo methodInfo)
+		{
+			if (IsChannelHolderMethod(methodInfo))
+			{
+				return false;
+			}
+
+			if (hook != null)
+			{
+				return hook.ShouldInterceptMethod(type, methodInfo);
+			}
+
+			return true;
+		}
+
+		private bool IsChannelHolderMethod(MethodInfo methodInfo)
+		{
+			return typeof(IWcfChannelHolder).IsAssignableFrom(methodInfo.DeclaringType);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System.ServiceModel;
+
 	using Castle.Core;
+	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Internal;
 	using Castle.MicroKernel;
 
@@ -26,26 +28,26 @@ namespace Castle.Facilities.WcfIntegration
 			BindChannelFactoryAware(channelFactory, kernel, burden);
 		}
 
+		public override void Accept(IWcfExtensionVisitor visitor)
+		{
+			visitor.VisitChannelExtension(this);
+		}
+
 		public override void AddDependencies(IKernel kernel, ComponentModel model)
 		{
 			WcfUtils.AddExtensionDependencies<IWcfPolicy>(kernel, WcfExtensionScope.Undefined, model);
 			WcfUtils.AddExtensionDependencies<IChannelFactoryAware>(kernel, WcfExtensionScope.Clients, model);
 		}
 
-		public override void Accept(IWcfExtensionVisitor visitor)
-		{
-			visitor.VisitChannelExtension(this);
-		}
-
 		private static void BindChannelFactoryAware(ChannelFactory channelFactory, IKernel kernel, IWcfBurden burden)
 		{
 			WcfUtils.AddBehaviors<IWcfPolicy>(kernel, WcfExtensionScope.Undefined, null, burden, null);
 			WcfUtils.AddBehaviors<IChannelFactoryAware>(kernel, WcfExtensionScope.Clients, null, burden,
-				channelFactoryAware =>
-				{
-					WcfUtils.BindChannelFactoryAware(channelFactory, channelFactoryAware, true);
-					return true;
-				});
+			                                            channelFactoryAware =>
+			                                            {
+			                                            	WcfUtils.BindChannelFactoryAware(channelFactory, channelFactoryAware, true);
+			                                            	return true;
+			                                            });
 		}
 	}
 }

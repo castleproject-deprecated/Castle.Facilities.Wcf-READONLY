@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System;
 	using System.Collections.Generic;
@@ -22,10 +22,10 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel.Dispatcher;
 	using System.Xml;
 
-	interface IPreserveObjectReferences
+	internal interface IPreserveObjectReferences
 	{
-		int MaxItemsInObjectGraph { get; }
 		bool IgnoreExtensionDataObject { get; }
+		int MaxItemsInObjectGraph { get; }
 	}
 
 	[AttributeUsage(AttributeTargets.Interface | AttributeTargets.Class)]
@@ -42,9 +42,12 @@ namespace Castle.Facilities.WcfIntegration
 			IgnoreExtensionDataObject = ignoreExtensionDataObject;
 		}
 
+		public bool IgnoreExtensionDataObject { get; private set; }
 		public int MaxItemsInObjectGraph { get; private set; }
 
-		public bool IgnoreExtensionDataObject { get; private set; }
+		void IContractBehavior.AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
+		{
+		}
 
 		void IContractBehavior.ApplyClientBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, ClientRuntime clientRuntime)
 		{
@@ -54,10 +57,6 @@ namespace Castle.Facilities.WcfIntegration
 		void IContractBehavior.ApplyDispatchBehavior(ContractDescription contractDescription, ServiceEndpoint endpoint, DispatchRuntime dispatchRuntime)
 		{
 			PreserveObjectReferenceSerializerOperationBehavior.ReplaceDataContractSerializer(endpoint.Contract, this);
-		}
-
-		void IContractBehavior.AddBindingParameters(ContractDescription contractDescription, ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
-		{
 		}
 
 		void IContractBehavior.Validate(ContractDescription contractDescription, ServiceEndpoint endpoint)
@@ -98,10 +97,11 @@ namespace Castle.Facilities.WcfIntegration
 		internal static void ReplaceDataContractSerializer(OperationDescription operation, IPreserveObjectReferences preserverObjectReference)
 		{
 			if (operation.Behaviors.Remove(typeof(DataContractSerializerOperationBehavior)) ||
-				operation.Behaviors.Remove(typeof(PreserveObjectReferenceSerializerOperationBehavior)))
+			    operation.Behaviors.Remove(typeof(PreserveObjectReferenceSerializerOperationBehavior)))
 			{
 				operation.Behaviors.Add(new PreserveObjectReferenceSerializerOperationBehavior(operation,
-					preserverObjectReference.MaxItemsInObjectGraph, preserverObjectReference.IgnoreExtensionDataObject));
+				                                                                               preserverObjectReference.MaxItemsInObjectGraph,
+				                                                                               preserverObjectReference.IgnoreExtensionDataObject));
 			}
 		}
 	}
@@ -123,9 +123,12 @@ namespace Castle.Facilities.WcfIntegration
 			IgnoreExtensionDataObject = ignoreExtensionDataObject;
 		}
 
+		public bool IgnoreExtensionDataObject { get; private set; }
 		public int MaxItemsInObjectGraph { get; private set; }
 
-		public bool IgnoreExtensionDataObject { get; private set; }
+		public void AddBindingParameters(OperationDescription description, BindingParameterCollection parameters)
+		{
+		}
 
 		public void ApplyClientBehavior(OperationDescription description, ClientOperation proxy)
 		{
@@ -135,10 +138,6 @@ namespace Castle.Facilities.WcfIntegration
 		public void ApplyDispatchBehavior(OperationDescription description, DispatchOperation dispatch)
 		{
 			PreserveObjectReferenceSerializerOperationBehavior.ReplaceDataContractSerializer(description, this);
-		}
-
-		public void AddBindingParameters(OperationDescription description, BindingParameterCollection parameters)
-		{
 		}
 
 		public void Validate(OperationDescription description)

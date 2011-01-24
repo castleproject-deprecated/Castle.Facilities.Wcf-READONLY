@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,64 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
 	using System;
 	using System.Linq;
 	using System.ServiceModel.Discovery;
 	using System.ServiceModel.Discovery.Version11;
+
 	using Castle.Facilities.WcfIntegration.Internal;
 
-    public class ServiceCatalog : DiscoveryProxy, IServiceCatalog
-    {
-        private readonly IServiceCatalogImplementation implementation;
+	public class ServiceCatalog : DiscoveryProxy, IServiceCatalog
+	{
+		private readonly IServiceCatalogImplementation implementation;
 
-        public ServiceCatalog() : this(new InMemoryServiceCatalog())
-        {
-        }
+		public ServiceCatalog() : this(new InMemoryServiceCatalog())
+		{
+		}
 
-        public ServiceCatalog(IServiceCatalogImplementation implementation)
-        {
-            if (implementation == null)
-            {
-                throw new ArgumentNullException("implementation");
-            }
-            this.implementation = implementation;
-        }
+		public ServiceCatalog(IServiceCatalogImplementation implementation)
+		{
+			if (implementation == null)
+			{
+				throw new ArgumentNullException("implementation");
+			}
+			this.implementation = implementation;
+		}
 
 		protected override IAsyncResult OnBeginFind(FindRequestContext findRequestContext, AsyncCallback callback, object state)
 		{
 			implementation.FindService(findRequestContext);
 			return new SynchronousResult(callback, state);
-		}
-
-		protected override void OnEndFind(IAsyncResult result)
-		{
-			AsyncResult.End(result);
-		}
-
-		protected override IAsyncResult OnBeginResolve(ResolveCriteria resolveCriteria, AsyncCallback callback, object state)
-		{
-			return new SynchronousResult(callback, state, implementation.ResolveService(resolveCriteria));
-		}
-
-		protected override EndpointDiscoveryMetadata OnEndResolve(IAsyncResult result)
-		{
-			return AsyncResult.End<EndpointDiscoveryMetadata>(result);
-		}
-
-		protected override IAsyncResult OnBeginOnlineAnnouncement(
-			DiscoveryMessageSequence messageSequence, EndpointDiscoveryMetadata endpointDiscoveryMetadata, 
-			AsyncCallback callback, object state)
-		{
-			implementation.RegisterService(endpointDiscoveryMetadata);
-			return new SynchronousResult(callback, state);
-		}
-
-		protected override void OnEndOnlineAnnouncement(IAsyncResult result)
-		{
-			AsyncResult.End(result);
 		}
 
 		protected override IAsyncResult OnBeginOfflineAnnouncement(
@@ -80,20 +53,54 @@ namespace Castle.Facilities.WcfIntegration
 			return new SynchronousResult(callback, state);
 		}
 
+		protected override IAsyncResult OnBeginOnlineAnnouncement(
+			DiscoveryMessageSequence messageSequence, EndpointDiscoveryMetadata endpointDiscoveryMetadata,
+			AsyncCallback callback, object state)
+		{
+			implementation.RegisterService(endpointDiscoveryMetadata);
+			return new SynchronousResult(callback, state);
+		}
+
+		protected override IAsyncResult OnBeginResolve(ResolveCriteria resolveCriteria, AsyncCallback callback, object state)
+		{
+			return new SynchronousResult(callback, state, implementation.ResolveService(resolveCriteria));
+		}
+
+		protected override void OnEndFind(IAsyncResult result)
+		{
+			AsyncResult.End(result);
+		}
+
 		protected override void OnEndOfflineAnnouncement(IAsyncResult result)
 		{
 			AsyncResult.End(result);
 		}
 
-		EndpointDiscoveryMetadata11[] IServiceCatalog.ListServices()
+		protected override void OnEndOnlineAnnouncement(IAsyncResult result)
 		{
-			return null;
+			AsyncResult.End(result);
+		}
+
+		protected override EndpointDiscoveryMetadata OnEndResolve(IAsyncResult result)
+		{
+			return AsyncResult.End<EndpointDiscoveryMetadata>(result);
+		}
+
+		IAsyncResult IServiceCatalog.BeginFindServices(FindCriteria11 criteria, AsyncCallback callback, object state)
+		{
+			return new SynchronousResult(callback, state, implementation.FindServices(criteria.ToFindCriteria())
+			                                              	.Select(service => EndpointDiscoveryMetadata11.FromEndpointDiscoveryMetadata(service)));
 		}
 
 		IAsyncResult IServiceCatalog.BeginListServices(AsyncCallback callback, object state)
 		{
 			return new SynchronousResult(callback, state, implementation.ListServices()
-				.Select(service => EndpointDiscoveryMetadata11.FromEndpointDiscoveryMetadata(service)));
+			                                              	.Select(service => EndpointDiscoveryMetadata11.FromEndpointDiscoveryMetadata(service)));
+		}
+
+		EndpointDiscoveryMetadata11[] IServiceCatalog.EndFindServices(IAsyncResult result)
+		{
+			return AsyncResult.End<EndpointDiscoveryMetadata11[]>(result);
 		}
 
 		EndpointDiscoveryMetadata11[] IServiceCatalog.EndListServices(IAsyncResult result)
@@ -106,17 +113,10 @@ namespace Castle.Facilities.WcfIntegration
 			return null;
 		}
 
-        IAsyncResult IServiceCatalog.BeginFindServices(FindCriteria11 criteria, AsyncCallback callback, object state)
-        {
-            return new SynchronousResult(callback, state, implementation.FindServices(criteria.ToFindCriteria())
-				.Select(service => EndpointDiscoveryMetadata11.FromEndpointDiscoveryMetadata(service)));
-        }
-
-        EndpointDiscoveryMetadata11[] IServiceCatalog.EndFindServices(IAsyncResult result)
-        {
-            return AsyncResult.End<EndpointDiscoveryMetadata11[]>(result);
-        }
-    }
+		EndpointDiscoveryMetadata11[] IServiceCatalog.ListServices()
+		{
+			return null;
+		}
+	}
 #endif
 }
-

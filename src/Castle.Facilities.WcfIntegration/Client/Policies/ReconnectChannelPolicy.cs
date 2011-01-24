@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,59 +12,59 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Policies
 {
-    using System;
-    using System.ServiceModel;
-    using System.ServiceModel.Security;
+	using System.ServiceModel;
+	using System.ServiceModel.Security;
 
-    /// <summary>
-    /// Policy to recover from a <see cref="T:System.ServiceModel.CommunicationException" />
-    /// by refreshing the channel and trying again.  This policy will
-    /// handle situations in which a connection has been reset on the
-    /// server which invalidates the the client channel.
-    /// </summary>
-    public class ReconnectChannelPolicy : AbstractWcfPolicy, IWcfPolicy
-    {
-        /// <inheritdoc />
-        public override void Apply(WcfInvocation wcfInvocation)
-        {
-            var reconnect = false;
+	using Castle.Facilities.WcfIntegration.Client.Proxy;
 
-            try
-            {
-                wcfInvocation.Refresh().Proceed();
-            }
-            catch (ChannelTerminatedException)
-            {
-                reconnect = true;
-            }
-            catch (CommunicationObjectFaultedException)
-            {
-                reconnect = true;
-            }
-            catch (CommunicationObjectAbortedException)
-            {
-                reconnect = true;
-            }
-            catch (MessageSecurityException)
-            {
-                reconnect = true;
-            }
-            catch (CommunicationException exception)
-            {
-                if (exception.GetType() != typeof(CommunicationException))
-                {
-                    throw;
-                }
-                reconnect = true;
-            }
+	/// <summary>
+	///   Policy to recover from a <see cref = "T:System.ServiceModel.CommunicationException" />
+	///   by refreshing the channel and trying again.  This policy will
+	///   handle situations in which a connection has been reset on the
+	///   server which invalidates the the client channel.
+	/// </summary>
+	public class ReconnectChannelPolicy : AbstractWcfPolicy, IWcfPolicy
+	{
+		/// <inheritdoc />
+		public override void Apply(WcfInvocation wcfInvocation)
+		{
+			var reconnect = false;
 
-            if (reconnect)
-            {
-                wcfInvocation.Refresh().Proceed();
-            }
-        }
-    }
+			try
+			{
+				wcfInvocation.Refresh().Proceed();
+			}
+			catch (ChannelTerminatedException)
+			{
+				reconnect = true;
+			}
+			catch (CommunicationObjectFaultedException)
+			{
+				reconnect = true;
+			}
+			catch (CommunicationObjectAbortedException)
+			{
+				reconnect = true;
+			}
+			catch (MessageSecurityException)
+			{
+				reconnect = true;
+			}
+			catch (CommunicationException exception)
+			{
+				if (exception.GetType() != typeof(CommunicationException))
+				{
+					throw;
+				}
+				reconnect = true;
+			}
+
+			if (reconnect)
+			{
+				wcfInvocation.Refresh().Proceed();
+			}
+		}
+	}
 }
-

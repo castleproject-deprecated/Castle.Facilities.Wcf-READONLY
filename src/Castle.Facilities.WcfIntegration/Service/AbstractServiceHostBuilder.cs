@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,14 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.Collections.Generic;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Description;
+
 	using Castle.Core;
+	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Internal;
 	using Castle.MicroKernel;
 
@@ -32,12 +34,51 @@ namespace Castle.Facilities.WcfIntegration
 			this.kernel = kernel;
 		}
 
+		public WcfServiceExtension Services { get; set; }
+
 		protected IKernel Kernel
 		{
 			get { return kernel; }
 		}
 
-		public WcfServiceExtension Services { get; set; }
+		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ContractEndpointModel model)
+		{
+			var binding = GetEffectiveBinding(null, serviceHost, string.Empty);
+			return serviceHost.AddServiceEndpoint(model.Contract, binding, string.Empty);
+		}
+
+		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ServiceEndpointModel model)
+		{
+			serviceHost.Description.Endpoints.Add(model.ServiceEndpoint);
+			return model.ServiceEndpoint;
+		}
+
+		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ConfigurationEndpointModel model)
+		{
+			throw new InvalidOperationException("The ServiceEndpoint for a ServiceHost " +
+			                                    "cannot be created from an endpoint name.");
+		}
+
+		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, BindingEndpointModel model)
+		{
+			var binding = GetEffectiveBinding(model.Binding, serviceHost, string.Empty);
+			return serviceHost.AddServiceEndpoint(model.Contract, binding, string.Empty);
+		}
+
+		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, BindingAddressEndpointModel model)
+		{
+			var binding = GetEffectiveBinding(model.Binding, serviceHost, model.Address);
+
+			if (model.HasViaAddress)
+			{
+				return serviceHost.AddServiceEndpoint(
+					model.Contract, binding, model.Address, model.ViaAddress);
+			}
+			else
+			{
+				return serviceHost.AddServiceEndpoint(model.Contract, binding, model.Address);
+			}
+		}
 
 		protected void ConfigureServiceHost(ServiceHost serviceHost, IWcfServiceModel serviceModel, ComponentModel model)
 		{
@@ -100,58 +141,6 @@ namespace Castle.Facilities.WcfIntegration
 			serviceHost.Extensions.Add(new WcfBurdenExtension<ServiceHostBase>(burden));
 		}
 
-		protected static Uri[] GetEffectiveBaseAddresses(IWcfServiceModel serviceModel, Uri[] defaultBaseAddresses)
-		{
-			var baseAddresses = new List<Uri>(serviceModel.BaseAddresses);
-			foreach (Uri defaultBaseAddress in defaultBaseAddresses)
-			{
-				if (baseAddresses.Exists(uri => uri.Scheme == defaultBaseAddress.Scheme) == false)
-				{
-					baseAddresses.Add(defaultBaseAddress);
-				}
-			}
-			return baseAddresses.ToArray();
-		}
-
-		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ContractEndpointModel model)
-		{
-			var binding = GetEffectiveBinding(null, serviceHost, string.Empty);
-			return serviceHost.AddServiceEndpoint(model.Contract, binding, string.Empty);
-		}
-
-		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ServiceEndpointModel model)
-		{
-			serviceHost.Description.Endpoints.Add(model.ServiceEndpoint);
-			return model.ServiceEndpoint;
-		}
-
-		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, ConfigurationEndpointModel model)
-		{
-			throw new InvalidOperationException("The ServiceEndpoint for a ServiceHost " +
-				"cannot be created from an endpoint name.");
-		}
-
-		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, BindingEndpointModel model)
-		{
-			var binding = GetEffectiveBinding(model.Binding, serviceHost, string.Empty);
-			return serviceHost.AddServiceEndpoint(model.Contract, binding, string.Empty);
-		}
-
-		protected virtual ServiceEndpoint AddServiceEndpoint(ServiceHost serviceHost, BindingAddressEndpointModel model)
-		{
-			var binding = GetEffectiveBinding(model.Binding, serviceHost, model.Address);
-
-			if (model.HasViaAddress)
-			{
-				return serviceHost.AddServiceEndpoint(
-					model.Contract, binding, model.Address, model.ViaAddress);
-			}
-			else
-			{
-				return serviceHost.AddServiceEndpoint(model.Contract, binding, model.Address);
-			}
-		}
-
 		protected virtual Binding GetDefaultBinding(ServiceHost serviceHost, string address)
 		{
 			return null;
@@ -164,12 +153,23 @@ namespace Castle.Facilities.WcfIntegration
 			{
 				binding = Services.DefaultBinding;
 			}
-			return binding; 
+			return binding;
 		}
 
-		#region Nested Class: ServiceEndpointBuilder
+		protected static Uri[] GetEffectiveBaseAddresses(IWcfServiceModel serviceModel, Uri[] defaultBaseAddresses)
+		{
+			var baseAddresses = new List<Uri>(serviceModel.BaseAddresses);
+			foreach (var defaultBaseAddress in defaultBaseAddresses)
+			{
+				if (baseAddresses.Exists(uri => uri.Scheme == defaultBaseAddress.Scheme) == false)
+				{
+					baseAddresses.Add(defaultBaseAddress);
+				}
+			}
+			return baseAddresses.ToArray();
+		}
 
-		class ServiceEndpointBuilder : IWcfEndpointVisitor
+		private class ServiceEndpointBuilder : IWcfEndpointVisitor
 		{
 			private readonly AbstractServiceHostBuilder builder;
 			private readonly ServiceHost serviceHost;
@@ -184,7 +184,7 @@ namespace Castle.Facilities.WcfIntegration
 			public ServiceEndpoint AddServiceEndpoint(IWcfEndpoint endpoint)
 			{
 				endpoint.Accept(this);
-				return serviceEndpoint;				
+				return serviceEndpoint;
 			}
 
 			void IWcfEndpointVisitor.VisitContractEndpoint(ContractEndpointModel model)
@@ -211,6 +211,7 @@ namespace Castle.Facilities.WcfIntegration
 			{
 				serviceEndpoint = builder.AddServiceEndpoint(serviceHost, model);
 			}
+
 #if DOTNET40
 			void IWcfEndpointVisitor.VisitBindingDiscoveredEndpoint(DiscoveredEndpointModel model)
 			{
@@ -218,7 +219,5 @@ namespace Castle.Facilities.WcfIntegration
 			}
 #endif
 		}
-
-		#endregion
 	}
 }

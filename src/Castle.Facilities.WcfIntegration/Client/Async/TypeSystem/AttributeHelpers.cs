@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 	using System.Linq;
@@ -21,12 +21,12 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 	public static class AttributeHelpers
 	{
 		public static TAttribute GetAttribute<TAttribute>(this ICustomAttributeProvider provider)
-			where TAttribute:Attribute
+			where TAttribute : Attribute
 		{
 			return GetAttribute<TAttribute>(provider, true);
 		}
 
-		public static TAttribute GetAttribute<TAttribute>(this ICustomAttributeProvider provider, bool inherit) 
+		public static TAttribute GetAttribute<TAttribute>(this ICustomAttributeProvider provider, bool inherit)
 			where TAttribute : Attribute
 		{
 			return (TAttribute)provider.GetCustomAttributes(typeof(TAttribute), inherit).FirstOrDefault();

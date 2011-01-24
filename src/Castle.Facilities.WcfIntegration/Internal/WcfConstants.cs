@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,24 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Internal
 {
 	using System.Xml.Linq;
 
-    internal static class WcfConstants
-    {
+	internal static class WcfConstants
+	{
+		public const string ClientBurdenKey = "wcf.clientBurden";
+		public const string ClientModelKey = "wcf.clientModel";
+		public const string EndpointConfiguration = "wcfEndpointConfiguration";
 		public const string ExtensionScopeKey = "scope";
 
-        public const string ServiceHostsKey = "wcf.serviceHosts";
-		public const string ServiceHostEnabled = "wcfServiceHost";
-
-		public const string ClientModelKey = "wcf.clientModel";
-		public const string ClientBurdenKey = "wcf.clientBurden";
-		public const string EndpointConfiguration = "wcfEndpointConfiguration";
-
 		public const string Namespace = "urn:www.castleproject.org:wcf";
+		public const string ServiceHostEnabled = "wcfServiceHost";
+		public const string ServiceHostsKey = "wcf.serviceHosts";
 
 		public static readonly XName EndpointMetadata = XName.Get("Endpoint", Namespace);
 	}
 }
-

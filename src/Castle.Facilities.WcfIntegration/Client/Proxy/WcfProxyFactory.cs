@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Proxy
+namespace Castle.Facilities.WcfIntegration.Client.Proxy
 {
 	using System;
 	using System.Linq;
 	using System.Runtime.Remoting;
 	using System.ServiceModel;
+
 	using Castle.Core;
 	using Castle.DynamicProxy;
-	using Castle.Facilities.WcfIntegration.Async;
-	using Castle.Facilities.WcfIntegration.Async.TypeSystem;
+	using Castle.Facilities.WcfIntegration.Client.Async;
+	using Castle.Facilities.WcfIntegration.Client.Async.TypeSystem;
 	using Castle.Facilities.WcfIntegration.Internal;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.Context;
@@ -30,10 +31,10 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 
 	public class WcfProxyFactory : AbstractProxyFactory
 	{
-		private readonly ProxyGenerator generator;
 		private readonly WcfClientExtension clients;
-		private AsyncType asyncType;
+		private readonly ProxyGenerator generator;
 		private readonly WcfProxyGenerationHook wcfProxyGenerationHook;
+		private AsyncType asyncType;
 
 		public WcfProxyFactory(ProxyGenerator generator, WcfClientExtension clients)
 		{
@@ -43,13 +44,13 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 		}
 
 		public override object Create(IProxyFactoryExtension customFactory, IKernel kernel, ComponentModel model,
-									  CreationContext context, params object[] constructorArguments)
+		                              CreationContext context, params object[] constructorArguments)
 		{
 			throw new NotSupportedException();
 		}
 
-		public override object Create(IKernel kernel, object instance, ComponentModel model, 
-									  CreationContext context, params object[] constructorArguments)
+		public override object Create(IKernel kernel, object instance, ComponentModel model,
+		                              CreationContext context, params object[] constructorArguments)
 		{
 			var channelHolder = instance as IWcfChannelHolder;
 
@@ -70,7 +71,7 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			var interceptors = GetInterceptors(kernel, model, channelHolder, context);
 
 			return generator.CreateInterfaceProxyWithTarget(typeof(IWcfChannelHolder),
-				additionalInterfaces, channelHolder, generationOptions, interceptors);
+			                                                additionalInterfaces, channelHolder, generationOptions, interceptors);
 		}
 
 		public override bool RequiresTargetInstance(IKernel kernel, ComponentModel model)
@@ -78,47 +79,22 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			return true;
 		}
 
-		protected static bool IsDuplex(object realProxy)
-		{
-			var typeInfo = (IRemotingTypeInfo)realProxy;
-			return typeInfo.CanCastTo(typeof(IDuplexContextChannel), null);
-		}
-
 		protected virtual Type[] GetInterfaces(Type service, ProxyOptions proxyOptions, bool isDuplex)
 		{
 			// TODO: this should be static and happen in IContributeComponentModelConstruction preferably
 			var additionalInterfaces = proxyOptions.AdditionalInterfaces ?? Type.EmptyTypes;
 			Array.Resize(ref additionalInterfaces, additionalInterfaces.Length + (isDuplex ? 4 : 3));
-			int index = additionalInterfaces.Length;
+			var index = additionalInterfaces.Length;
 			additionalInterfaces[--index] = service;
 			additionalInterfaces[--index] = typeof(IServiceChannel);
 			additionalInterfaces[--index] = typeof(IClientChannel);
 
 			if (isDuplex)
-				additionalInterfaces[--index] = typeof(IDuplexContextChannel);
-
-			return additionalInterfaces;
-		}
-
-		private IInterceptor[] GetInterceptors(IKernel kernel, ComponentModel model,IWcfChannelHolder channelHolder, CreationContext context)
-		{
-			var interceptors = ObtainInterceptors(kernel, model, context);
-
-			// TODO: this should be static and happen in IContributeComponentModelConstruction preferably
-			var clientModel = (IWcfClientModel)model.ExtendedProperties[WcfConstants.ClientModelKey];
-			Array.Resize(ref interceptors, interceptors.Length + (clientModel.WantsAsyncCapability ? 2 : 1));
-			int index = interceptors.Length;
-
-			interceptors[--index] = new WcfRemotingInterceptor(clients, channelHolder);
-
-			if (clientModel.WantsAsyncCapability)
 			{
-				var getAsyncType = WcfUtils.SafeInitialize(ref asyncType,
-					() => AsyncType.GetAsyncType(model.Service));
-				interceptors[--index] = new WcfRemotingAsyncInterceptor(getAsyncType, clients, channelHolder);
+				additionalInterfaces[--index] = typeof(IDuplexContextChannel);
 			}
 
-			return interceptors;
+			return additionalInterfaces;
 		}
 
 		private ProxyGenerationOptions CreateProxyGenerationOptions(Type service, ProxyOptions proxyOptions, IKernel kernel, CreationContext context)
@@ -137,6 +113,33 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			};
 
 			return proxyGenOptions;
+		}
+
+		private IInterceptor[] GetInterceptors(IKernel kernel, ComponentModel model, IWcfChannelHolder channelHolder, CreationContext context)
+		{
+			var interceptors = ObtainInterceptors(kernel, model, context);
+
+			// TODO: this should be static and happen in IContributeComponentModelConstruction preferably
+			var clientModel = (IWcfClientModel)model.ExtendedProperties[WcfConstants.ClientModelKey];
+			Array.Resize(ref interceptors, interceptors.Length + (clientModel.WantsAsyncCapability ? 2 : 1));
+			var index = interceptors.Length;
+
+			interceptors[--index] = new WcfRemotingInterceptor(clients, channelHolder);
+
+			if (clientModel.WantsAsyncCapability)
+			{
+				var getAsyncType = WcfUtils.SafeInitialize(ref asyncType,
+				                                           () => AsyncType.GetAsyncType(model.Service));
+				interceptors[--index] = new WcfRemotingAsyncInterceptor(getAsyncType, clients, channelHolder);
+			}
+
+			return interceptors;
+		}
+
+		protected static bool IsDuplex(object realProxy)
+		{
+			var typeInfo = (IRemotingTypeInfo)realProxy;
+			return typeInfo.CanCastTo(typeof(IDuplexContextChannel), null);
 		}
 	}
 }

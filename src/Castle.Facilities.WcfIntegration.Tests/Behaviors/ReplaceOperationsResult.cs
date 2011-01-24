@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,24 +17,25 @@ namespace Castle.Facilities.WcfIntegration.Tests.Behaviors
 	using System.Collections;
 	using System.ServiceModel.Channels;
 	using System.Xml;
-	using Castle.Facilities.WcfIntegration.Behaviors;
+
+	using Castle.Facilities.WcfIntegration.Behaviors.Lifecyle;
 
 	public class ReplaceOperationsResult : AbstractMessageEnvelopeAction
 	{
 		private readonly string result;
 
-		public ReplaceOperationsResult(string result) 
+		public ReplaceOperationsResult(string result)
 			: base(MessageLifecycle.Responses)
 		{
 			this.result = result;
 		}
 
 		public override bool Perform(Message message, XmlDocument envelope, MessageLifecycle lifecyle,
-									 IDictionary state)
+		                             IDictionary state)
 		{
-			XmlNamespaceManager xmlns = new XmlNamespaceManager(envelope.NameTable);
+			var xmlns = new XmlNamespaceManager(envelope.NameTable);
 			xmlns.AddNamespace("tns", "http://tempuri.org/");
-			XmlNode node = envelope.SelectSingleNode("//tns:GetValueFromConstructorResult", xmlns);
+			var node = envelope.SelectSingleNode("//tns:GetValueFromConstructorResult", xmlns);
 			node.InnerText = result;
 			return true;
 		}

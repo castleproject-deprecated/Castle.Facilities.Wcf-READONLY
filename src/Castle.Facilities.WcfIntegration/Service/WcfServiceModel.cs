@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
-    using System;
+	using System;
 	using System.Linq;
-    using System.Collections.Generic;
-	using Castle.Facilities.WcfIntegration.Behaviors;
-	using Castle.Facilities.WcfIntegration.Internal;
+	using System.Collections.Generic;
 
-    public abstract class WcfServiceModelBase : IWcfServiceModel
-    {
-        private ICollection<Uri> baseAddresses;
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Behaviors.Logging;
+	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Service.Discovery;
+
+	public abstract class WcfServiceModelBase : IWcfServiceModel
+	{
+		private ICollection<Uri> baseAddresses;
 		private ICollection<IWcfEndpoint> endpoints;
 		private ICollection<IWcfExtension> extensions;
-
-		#region IWcfServiceModel 
-
-		public bool IsHosted { get; protected set; }
-
-		public bool? ShouldOpenEagerly { get; protected set; }
 
 		public ICollection<Uri> BaseAddresses
 		{
@@ -70,7 +67,9 @@ namespace Castle.Facilities.WcfIntegration
 			}
 		}
 
-		#endregion
+		public bool IsHosted { get; protected set; }
+
+		public bool? ShouldOpenEagerly { get; protected set; }
 	}
 
 	public abstract class WcfServiceModel<T> : WcfServiceModelBase
@@ -130,7 +129,10 @@ namespace Castle.Facilities.WcfIntegration
 		public T PublishMetadata(Action<WcfMetadataExtension> mex)
 		{
 			var mexExtension = new WcfMetadataExtension();
-			if (mex != null) mex(mexExtension);
+			if (mex != null)
+			{
+				mex(mexExtension);
+			}
 			return AddExtensions(mexExtension);
 		}
 
@@ -144,7 +146,7 @@ namespace Castle.Facilities.WcfIntegration
 			if (typeof(IWcfMetadataProvider).IsAssignableFrom(metaProvider) == false)
 			{
 				throw new ArgumentException(string.Format("The metaProvider {0} does not implement {1}.",
-					metaProvider, typeof(IWcfMetadataProvider)));
+				                                          metaProvider, typeof(IWcfMetadataProvider)));
 			}
 			return AddExtensions(metaProvider);
 		}
@@ -157,6 +159,7 @@ namespace Castle.Facilities.WcfIntegration
 		#endregion
 
 #if DOTNET40
+
 		#region Discovery
 
 		public T Discoverable()
@@ -167,11 +170,15 @@ namespace Castle.Facilities.WcfIntegration
 		public T Discoverable(Action<WcfDiscoveryExtension> discover)
 		{
 			var discoveryExtension = new WcfDiscoveryExtension();
-			if (discover != null) discover(discoveryExtension);
+			if (discover != null)
+			{
+				discover(discoveryExtension);
+			}
 			return AddExtensions(discoveryExtension);
 		}
 
 		#endregion
+
 #endif
 
 		#region Logging

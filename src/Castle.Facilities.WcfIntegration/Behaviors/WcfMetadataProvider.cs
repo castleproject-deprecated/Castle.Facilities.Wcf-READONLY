@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System;
 	using System.Collections.Generic;
@@ -28,8 +28,7 @@ namespace Castle.Facilities.WcfIntegration
 			Extensions = new List<XElement>();
 		}
 
-		public ICollection<Uri> Scopes { get; private set; }
-
 		public ICollection<XElement> Extensions { get; private set; }
+		public ICollection<Uri> Scopes { get; private set; }
 	}
 }

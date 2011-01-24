@@ -26,6 +26,7 @@ namespace Castle.Facilities.WcfIntegration
 	using System.Xml.Linq;
 
 	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Behaviors.Logging;
 	using Castle.Facilities.WcfIntegration.Internal;
 
 	public static class WcfEndpoint

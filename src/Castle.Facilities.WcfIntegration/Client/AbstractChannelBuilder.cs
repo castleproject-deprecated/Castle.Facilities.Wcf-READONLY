@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.Linq;
@@ -22,8 +22,10 @@ namespace Castle.Facilities.WcfIntegration
 #if DOTNET40
 	using System.ServiceModel.Discovery;
 #endif
-	using Castle.MicroKernel;
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Client.Discovery;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.MicroKernel;
 
 	public abstract class AbstractChannelBuilder : IWcfEndpointVisitor
 	{

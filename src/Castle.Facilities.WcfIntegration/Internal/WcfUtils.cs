@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,7 +23,11 @@ namespace Castle.Facilities.WcfIntegration.Internal
 	using System.ServiceModel.Description;
 	using System.ServiceModel.Dispatcher;
 	using System.Threading;
+
 	using Castle.Core;
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Client;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.Context;
 
@@ -31,9 +35,162 @@ namespace Castle.Facilities.WcfIntegration.Internal
 	{
 		public static readonly Arguments EmptyArguments = new Arguments();
 
-		public static bool IsHosted(IWcfServiceModel serviceModel)
+		public static ICollection<T> AddAll<T>(this ICollection<T> collection, params T[] items)
 		{
-			return serviceModel.IsHosted;
+			return AddAll(collection, (IEnumerable<T>)items);
+		}
+
+		public static ICollection<T> AddAll<T>(this ICollection<T> collection, IEnumerable<T> items)
+		{
+			foreach (var item in items)
+			{
+				collection.Add(item);
+			}
+			return collection;
+		}
+
+		public static void AddExtensionDependencies<T>(IKernel kernel, WcfExtensionScope scope, ComponentModel model)
+		{
+			foreach (var handler in FindExtensions<T>(kernel, scope))
+			{
+				AddExtensionDependency(null, handler.ComponentModel.Service, model);
+			}
+		}
+
+		public static void AddExtensionDependency(string dependencyKey, Type serviceType, ComponentModel model)
+		{
+			model.Dependencies.Add(new DependencyModel(DependencyType.Service, dependencyKey, serviceType, false));
+		}
+
+		public static bool AttachExtension(object owner, object extension)
+		{
+			var helper = (IWcfExtensionHelper)
+			             Activator.CreateInstance(typeof(WcfExtensionHelper<>)
+			                                      	.MakeGenericType(owner.GetType()), owner);
+			return helper.AddExtension(extension);
+		}
+
+		public static bool AttachExtension<T>(KeyedByTypeCollection<T> candidates, object extension)
+		{
+			Type owner = null;
+			if (IsExtension(extension, ref owner))
+			{
+				return AttachExtension(candidates, extension, owner);
+			}
+			return false;
+		}
+
+		public static bool AttachExtension<T>(KeyedByTypeCollection<T> candidates, object extension, Type owner)
+		{
+			if (typeof(T).IsAssignableFrom(owner))
+			{
+				var helper = (IWcfExtensionHelper)Activator.CreateInstance(typeof(WcfExtensionHelper<,>)
+				                                                           	.MakeGenericType(typeof(T), owner), candidates);
+				return helper.AddExtension(extension);
+			}
+			return false;
+		}
+
+		public static void BindChannelFactoryAware(ChannelFactory channelFactory, IChannelFactoryAware channelFactoryAware, bool created)
+		{
+			if (created)
+			{
+				channelFactoryAware.Created(channelFactory);
+			}
+			channelFactory.Opening += delegate { channelFactoryAware.Opening(channelFactory); };
+			channelFactory.Opened += delegate { channelFactoryAware.Opened(channelFactory); };
+			channelFactory.Closing += delegate { channelFactoryAware.Closing(channelFactory); };
+			channelFactory.Closed += delegate { channelFactoryAware.Closed(channelFactory); };
+			channelFactory.Faulted += delegate { channelFactoryAware.Faulted(channelFactory); };
+		}
+
+		public static void BindServiceHostAware(ServiceHost serviceHost, IServiceHostAware serviceHostAware, bool created)
+		{
+			if (created)
+			{
+				serviceHostAware.Created(serviceHost);
+			}
+			serviceHost.Opening += delegate { serviceHostAware.Opening(serviceHost); };
+			serviceHost.Opened += delegate { serviceHostAware.Opened(serviceHost); };
+			serviceHost.Closing += delegate { serviceHostAware.Closing(serviceHost); };
+			serviceHost.Closed += delegate { serviceHostAware.Closed(serviceHost); };
+			serviceHost.Faulted += delegate { serviceHostAware.Faulted(serviceHost); };
+		}
+
+		public static void ExtendBehavior(IKernel kernel, WcfExtensionScope scope, object behavior, CreationContext context)
+		{
+			var behaviorType = behavior.GetType();
+			if (IsExtensibleOfItself(behaviorType) == false)
+			{
+				return;
+			}
+
+			var extensionType = typeof(IExtension<>).MakeGenericType(behaviorType);
+			foreach (var extensionHandler in FindExtensions(kernel, scope, extensionType))
+			{
+				var extension = extensionHandler.Resolve(context);
+				AttachExtension(behavior, extension);
+			}
+		}
+
+		public static IEnumerable<T> FindDependencies<T>(IDictionary dependencies)
+		{
+			return FindDependencies<T>(dependencies, null);
+		}
+
+		public static IEnumerable<T> FindDependencies<T>(IDictionary dependencies, Predicate<T> test)
+		{
+			if (dependencies != null)
+			{
+				foreach (var dependency in dependencies.Values)
+				{
+					if (dependency is T)
+					{
+						var candidate = (T)dependency;
+
+						if (test == null || test(candidate))
+						{
+							yield return candidate;
+						}
+					}
+					else if (dependency is IEnumerable<T>)
+					{
+						foreach (var item in (IEnumerable<T>)dependency)
+						{
+							yield return item;
+						}
+					}
+				}
+			}
+		}
+
+		public static IEnumerable<IHandler> FindExtensions<T>(IKernel kernel, WcfExtensionScope scope)
+		{
+			return FindExtensions(kernel, scope, typeof(T));
+		}
+
+		public static IEnumerable<IHandler> FindExtensions(IKernel kernel, WcfExtensionScope scope, Type type)
+		{
+			foreach (var handler in kernel.GetAssignableHandlers(type))
+			{
+				var model = handler.ComponentModel;
+				var extensionsScope = GetScope(model);
+				if (ScopesCompatible(scope, extensionsScope))
+				{
+					yield return handler;
+				}
+			}
+		}
+
+		public static Type GetClosedGenericDefinition(Type openGenericDefinition, Type implementation)
+		{
+			var genericArgument =
+				(from @interface in implementation.GetInterfaces()
+				 where @interface.IsGenericType && @interface.GetGenericTypeDefinition() == openGenericDefinition
+				 select @interface.GetGenericArguments()[0]
+				).FirstOrDefault();
+
+			return (genericArgument != null) ? openGenericDefinition.MakeGenericType(genericArgument) : null;
 		}
 
 		public static WcfExtensionScope GetScope(ComponentModel model)
@@ -60,72 +217,22 @@ namespace Castle.Facilities.WcfIntegration.Internal
 			return WcfExtensionScope.Undefined;
 		}
 
-		internal static void AddBehaviors<T>(IKernel kernel, WcfExtensionScope scope,
-										   KeyedByTypeCollection<T> behaviors, IWcfBurden burden)
+		public static bool IsBehaviorExtension(object behavior)
 		{
-			AddBehaviors(kernel, scope, behaviors, burden, null);
+			return behavior is IServiceBehavior || behavior is IContractBehavior ||
+			       behavior is IOperationBehavior || behavior is IEndpointBehavior;
 		}
 
-		internal static void AddBehaviors<T>(IKernel kernel, WcfExtensionScope scope,
-										   KeyedByTypeCollection<T> behaviors, IWcfBurden burden,
-										   Predicate<T> predicate)
+		public static bool IsCommunicationObjectReady(ICommunicationObject comm)
 		{
-			foreach (var handler in FindExtensions<T>(kernel, scope))
+			switch (comm.State)
 			{
-				T behavior = (T)handler.Resolve(CreationContext.Empty);
-				if (predicate == null || predicate(behavior))
-				{
-					if (behaviors != null) behaviors.Add(behavior);
-					if (burden != null) burden.Add(behavior);
-				}
+				case CommunicationState.Closed:
+				case CommunicationState.Closing:
+				case CommunicationState.Faulted:
+					return false;
 			}
-		}
-
-		public static void ExtendBehavior(IKernel kernel, WcfExtensionScope scope, object behavior, CreationContext context)
-		{
-			var behaviorType = behavior.GetType();
-			if(IsExtensibleOfItself(behaviorType) == false)
-			{
-				return;
-			}
-			
-			var extensionType = typeof(IExtension<>).MakeGenericType(behaviorType);
-			foreach (var extensionHandler in FindExtensions(kernel, scope, extensionType))
-			{
-				var extension = extensionHandler.Resolve(context);
-				AttachExtension(behavior, extension);
-			}
-		}
-
-		public static IEnumerable<IHandler> FindExtensions<T>(IKernel kernel, WcfExtensionScope scope)
-		{
-			return FindExtensions(kernel, scope, typeof(T));
-		}
-
-		public static IEnumerable<IHandler> FindExtensions(IKernel kernel, WcfExtensionScope scope, Type type)
-		{
-			foreach (var handler in kernel.GetAssignableHandlers(type))
-			{
-				var model = handler.ComponentModel;
-				var extensionsScope = GetScope(model);
-				if (ScopesCompatible(scope, extensionsScope))
-				{
-					yield return handler;
-				}
-			}
-		}
-
-		public static void AddExtensionDependencies<T>(IKernel kernel, WcfExtensionScope scope, ComponentModel model)
-		{
-			foreach (var handler in FindExtensions<T>(kernel, scope))
-			{
-				AddExtensionDependency(null, handler.ComponentModel.Service, model);
-			}
-		}
-
-		public static void AddExtensionDependency(string dependencyKey, Type serviceType, ComponentModel model)
-		{
-			model.Dependencies.Add(new DependencyModel(DependencyType.Service, dependencyKey, serviceType, false));
+			return true;
 		}
 
 		public static bool IsExtension<T>(object extension)
@@ -158,115 +265,28 @@ namespace Castle.Facilities.WcfIntegration.Internal
 			return false;
 		}
 
-		public static bool AttachExtension(object owner, object extension)
+		public static bool IsHosted(IWcfServiceModel serviceModel)
 		{
-			var helper = (IWcfExtensionHelper)
-							Activator.CreateInstance(typeof(WcfExtensionHelper<>)
-								.MakeGenericType(owner.GetType()), owner);
-			return helper.AddExtension(extension);
-		}
-
-		public static bool AttachExtension<T>(KeyedByTypeCollection<T> candidates, object extension)
-		{
-			Type owner = null;
-			if (IsExtension(extension, ref owner))
-			{
-				return AttachExtension(candidates, extension, owner);
-			}
-			return false;
-		}
-
-		public static bool AttachExtension<T>(KeyedByTypeCollection<T> candidates, object extension, Type owner)
-		{
-			if (typeof(T).IsAssignableFrom(owner))
-			{
-				var helper = (IWcfExtensionHelper)Activator.CreateInstance(typeof(WcfExtensionHelper<,>)
-					.MakeGenericType(typeof(T), owner), candidates);
-				return helper.AddExtension(extension);
-			}
-			return false;
-		}
-
-		public static void BindServiceHostAware(ServiceHost serviceHost, IServiceHostAware serviceHostAware, bool created)
-		{
-			if (created) serviceHostAware.Created(serviceHost);
-			serviceHost.Opening += delegate { serviceHostAware.Opening(serviceHost); };
-			serviceHost.Opened += delegate { serviceHostAware.Opened(serviceHost); };
-			serviceHost.Closing += delegate { serviceHostAware.Closing(serviceHost); };
-			serviceHost.Closed += delegate { serviceHostAware.Closed(serviceHost); };
-			serviceHost.Faulted += delegate { serviceHostAware.Faulted(serviceHost); };
-		}
-
-		public static void BindChannelFactoryAware(ChannelFactory channelFactory, IChannelFactoryAware channelFactoryAware, bool created)
-		{
-			if (created) channelFactoryAware.Created(channelFactory);
-			channelFactory.Opening += delegate { channelFactoryAware.Opening(channelFactory); };
-			channelFactory.Opened += delegate { channelFactoryAware.Opened(channelFactory); };
-			channelFactory.Closing += delegate { channelFactoryAware.Closing(channelFactory); };
-			channelFactory.Closed += delegate { channelFactoryAware.Closed(channelFactory); };
-			channelFactory.Faulted += delegate { channelFactoryAware.Faulted(channelFactory); };
+			return serviceModel.IsHosted;
 		}
 
 		public static bool RegisterErrorHandler(ServiceHost serviceHost, IErrorHandler errorHandler, bool skipPiggybacks)
 		{
-			if (skipPiggybacks && IsBehaviorExtension(errorHandler)) return false;
+			if (skipPiggybacks && IsBehaviorExtension(errorHandler))
+			{
+				return false;
+			}
 			serviceHost.Description.Behaviors.Add(new WcfErrorBehavior(errorHandler));
 			return true;
 		}
 
 		public static bool RegisterErrorHandler(ServiceEndpoint endpoint, IErrorHandler errorHandler, bool skipPiggybacks)
 		{
-			if (skipPiggybacks && IsBehaviorExtension(errorHandler)) return false;
+			if (skipPiggybacks && IsBehaviorExtension(errorHandler))
+			{
+				return false;
+			}
 			endpoint.Behaviors.Add(new WcfErrorBehavior(errorHandler));
-			return true;
-		}
-
-		public static bool IsBehaviorExtension(object behavior)
-		{
-			return behavior is IServiceBehavior || behavior is IContractBehavior ||
-				   behavior is IOperationBehavior || behavior is IEndpointBehavior;
-		}
-
-		public static IEnumerable<T> FindDependencies<T>(IDictionary dependencies)
-		{
-			return FindDependencies<T>(dependencies, null);
-		}
-
-		public static IEnumerable<T> FindDependencies<T>(IDictionary dependencies, Predicate<T> test)
-		{
-			if (dependencies != null)
-			{
-				foreach (object dependency in dependencies.Values)
-				{
-					if (dependency is T)
-					{
-						T candidate = (T)dependency;
-
-						if (test == null || test(candidate))
-						{
-							yield return candidate;
-						}
-					}
-					else if (dependency is IEnumerable<T>)
-					{
-						foreach (T item in (IEnumerable<T>)dependency)
-						{
-							yield return item;
-						}
-					}
-				}
-			}
-		}
-
-		public static bool IsCommunicationObjectReady(ICommunicationObject comm)
-		{
-			switch (comm.State)
-			{
-				case CommunicationState.Closed:
-				case CommunicationState.Closing:
-				case CommunicationState.Faulted:
-					return false;
-			}
 			return true;
 		}
 
@@ -299,45 +319,50 @@ namespace Castle.Facilities.WcfIntegration.Internal
 			}
 		}
 
-		public static ICollection<T> AddAll<T>(this ICollection<T> collection, params T[] items)
-		{
-			return AddAll(collection, (IEnumerable<T>)items);
-		}
-
-		public static ICollection<T> AddAll<T>(this ICollection<T> collection, IEnumerable<T> items)
-		{
-			foreach (var item in items)
-			{
-				collection.Add(item);
-			}
-			return collection;
-		}
-
-		public static Type GetClosedGenericDefinition(Type openGenericDefinition, Type implementation)
-		{
-			var genericArgument =
-				(from @interface in implementation.GetInterfaces()
-				 where @interface.IsGenericType && @interface.GetGenericTypeDefinition() == openGenericDefinition
-				 select @interface.GetGenericArguments()[0]
-				 ).FirstOrDefault();
-
-			return (genericArgument != null) ? openGenericDefinition.MakeGenericType(genericArgument) : null;
-		}
-
 		public static T SafeInitialize<T>(ref T cache, Func<T> source) where T : class
 		{
-			T getCache = Interlocked.CompareExchange(ref cache, null, null);
-			if (getCache != null) return getCache;
+			var getCache = Interlocked.CompareExchange(ref cache, null, null);
+			if (getCache != null)
+			{
+				return getCache;
+			}
 
 			getCache = source();
-			T updatedCache = Interlocked.CompareExchange(ref cache, getCache, null);
+			var updatedCache = Interlocked.CompareExchange(ref cache, getCache, null);
 			return updatedCache ?? getCache;
 		}
 
+		internal static void AddBehaviors<T>(IKernel kernel, WcfExtensionScope scope,
+		                                     KeyedByTypeCollection<T> behaviors, IWcfBurden burden)
+		{
+			AddBehaviors(kernel, scope, behaviors, burden, null);
+		}
+
+		internal static void AddBehaviors<T>(IKernel kernel, WcfExtensionScope scope,
+		                                     KeyedByTypeCollection<T> behaviors, IWcfBurden burden,
+		                                     Predicate<T> predicate)
+		{
+			foreach (var handler in FindExtensions<T>(kernel, scope))
+			{
+				var behavior = (T)handler.Resolve(CreationContext.Empty);
+				if (predicate == null || predicate(behavior))
+				{
+					if (behaviors != null)
+					{
+						behaviors.Add(behavior);
+					}
+					if (burden != null)
+					{
+						burden.Add(behavior);
+					}
+				}
+			}
+		}
+
 		/// <summary>
-		/// Checks if given <paramref name="type"/> <c>Foo</c> implements <c>IExtensibleObject&lt;Foo&gt;</c>
+		///   Checks if given <paramref name = "type" /> <c>Foo</c> implements <c>IExtensibleObject&lt;Foo&gt;</c>
 		/// </summary>
-		/// <param name="type"></param>
+		/// <param name = "type"></param>
 		/// <returns></returns>
 		private static bool IsExtensibleOfItself(Type type)
 		{
@@ -359,7 +384,7 @@ namespace Castle.Facilities.WcfIntegration.Internal
 			if ((extensionScope != WcfExtensionScope.Explicit || extendeeScope == WcfExtensionScope.Explicit))
 			{
 				return (extendeeScope == extensionScope || extendeeScope == WcfExtensionScope.Undefined ||
-						extensionScope == WcfExtensionScope.Undefined);
+				        extensionScope == WcfExtensionScope.Undefined);
 			}
 			return false;
 		}

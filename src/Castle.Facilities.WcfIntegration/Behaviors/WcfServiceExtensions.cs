@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System.Collections.Generic;
 	using System.ServiceModel;
 	using System.ServiceModel.Activation;
 	using System.ServiceModel.Description;
 	using System.ServiceModel.Dispatcher;
+
 	using Castle.Core;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.MicroKernel;
 
 	internal class WcfServiceExtensions : AbstractWcfExtension, IWcfServiceExtension
 	{
-		public void Install(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
+		public override void Accept(IWcfExtensionVisitor visitor)
 		{
-			BindServiceHostAware(serviceHost, kernel, burden);
-			AddServiceBehaviors(serviceHost, kernel, burden);
-			AddServiceHostExtensions(serviceHost, kernel, burden);
-			AddErrorHandlers(serviceHost, kernel, burden);
+			visitor.VisitServiceExtension(this);
 		}
 
 		public override void AddDependencies(IKernel kernel, ComponentModel model)
@@ -41,39 +40,40 @@ namespace Castle.Facilities.WcfIntegration
 			WcfUtils.AddExtensionDependencies<IErrorHandler>(kernel, WcfExtensionScope.Services, model);
 		}
 
-		public override void Accept(IWcfExtensionVisitor visitor)
+		public void Install(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
 		{
-			visitor.VisitServiceExtension(this);
+			BindServiceHostAware(serviceHost, kernel, burden);
+			AddServiceBehaviors(serviceHost, kernel, burden);
+			AddServiceHostExtensions(serviceHost, kernel, burden);
+			AddErrorHandlers(serviceHost, kernel, burden);
+		}
+
+		private static void AddErrorHandlers(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
+		{
+			var errorHandlers = new KeyedByTypeCollection<IErrorHandler>();
+			WcfUtils.AddBehaviors(kernel, WcfExtensionScope.Services, errorHandlers, burden, errorHandler =>
+			                                                                                 WcfUtils.RegisterErrorHandler(serviceHost, errorHandler, true));
 		}
 
 		private static void AddServiceBehaviors(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
 		{
 			WcfUtils.AddBehaviors(kernel, WcfExtensionScope.Services,
-				serviceHost.Description.Behaviors, burden, behavior =>
-				{
-					if (behavior.GetType() == typeof(ServiceBehaviorAttribute))
-					{
-						serviceHost.Description.Behaviors.Remove<ServiceBehaviorAttribute>();
-					}
-					else if (behavior.GetType() == typeof(ServiceDebugBehavior))
-					{
-						serviceHost.Description.Behaviors.Remove<ServiceDebugBehavior>();
-					}
-					else if (behavior.GetType() == typeof(AspNetCompatibilityRequirementsAttribute))
-					{
-						serviceHost.Description.Behaviors.Remove<AspNetCompatibilityRequirementsAttribute>();
-					}
-					return true;
-				});
-		}
-
-		private static void BindServiceHostAware(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
-		{
-            WcfUtils.AddBehaviors<IServiceHostAware>(kernel, WcfExtensionScope.Services, null, burden, serviceHostAware =>
-			{
-				WcfUtils.BindServiceHostAware(serviceHost, serviceHostAware, true);
-				return true;
-			});
+			                      serviceHost.Description.Behaviors, burden, behavior =>
+			                      {
+			                      	if (behavior.GetType() == typeof(ServiceBehaviorAttribute))
+			                      	{
+			                      		serviceHost.Description.Behaviors.Remove<ServiceBehaviorAttribute>();
+			                      	}
+			                      	else if (behavior.GetType() == typeof(ServiceDebugBehavior))
+			                      	{
+			                      		serviceHost.Description.Behaviors.Remove<ServiceDebugBehavior>();
+			                      	}
+			                      	else if (behavior.GetType() == typeof(AspNetCompatibilityRequirementsAttribute))
+			                      	{
+			                      		serviceHost.Description.Behaviors.Remove<AspNetCompatibilityRequirementsAttribute>();
+			                      	}
+			                      	return true;
+			                      });
 		}
 
 		private static void AddServiceHostExtensions(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
@@ -86,11 +86,13 @@ namespace Castle.Facilities.WcfIntegration
 			});
 		}
 
-		private static void AddErrorHandlers(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
+		private static void BindServiceHostAware(ServiceHost serviceHost, IKernel kernel, IWcfBurden burden)
 		{
-			var errorHandlers = new KeyedByTypeCollection<IErrorHandler>();
-			WcfUtils.AddBehaviors(kernel, WcfExtensionScope.Services, errorHandlers, burden, errorHandler =>
-				WcfUtils.RegisterErrorHandler(serviceHost, errorHandler, true));
+			WcfUtils.AddBehaviors<IServiceHostAware>(kernel, WcfExtensionScope.Services, null, burden, serviceHostAware =>
+			{
+				WcfUtils.BindServiceHostAware(serviceHost, serviceHostAware, true);
+				return true;
+			});
 		}
 	}
 }

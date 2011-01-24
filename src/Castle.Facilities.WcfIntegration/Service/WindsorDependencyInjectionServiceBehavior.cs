@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.Collections.Generic;
@@ -21,6 +21,7 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Description;
 	using System.ServiceModel.Dispatcher;
+
 	using Castle.Core;
 	using Castle.MicroKernel;
 
@@ -35,24 +36,13 @@ namespace Castle.Facilities.WcfIntegration
 			this.model = model;
 		}
 
-		#region IServiceBehavior Members
-
 		///<summary>
-		///Provides the ability to inspect the service host and the service description to confirm that the service can run successfully.
+		///  Provides the ability to pass custom data to binding elements to support the contract implementation.
 		///</summary>
-		///<param name="serviceHostBase">The service host that is currently being constructed.</param>
-		///<param name="serviceDescription">The service description.</param>
-		public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
-		{
-		}
-
-		///<summary>
-		///Provides the ability to pass custom data to binding elements to support the contract implementation.
-		///</summary>
-		///<param name="serviceHostBase">The host of the service.</param>
-		///<param name="bindingParameters">Custom objects to which binding elements have access.</param>
-		///<param name="serviceDescription">The service description of the service.</param>
-		///<param name="endpoints">The service endpoints.</param>
+		///<param name = "serviceHostBase">The host of the service.</param>
+		///<param name = "bindingParameters">Custom objects to which binding elements have access.</param>
+		///<param name = "serviceDescription">The service description of the service.</param>
+		///<param name = "endpoints">The service endpoints.</param>
 		public void AddBindingParameters(
 			ServiceDescription serviceDescription, ServiceHostBase serviceHostBase,
 			Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters)
@@ -63,8 +53,8 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			var serviceBehavior = serviceDescription.Behaviors.Find<ServiceBehaviorAttribute>();
 
-			bool singleInstance = (serviceBehavior != null && 
-				serviceBehavior.InstanceContextMode == InstanceContextMode.Single);
+			var singleInstance = (serviceBehavior != null &&
+			                      serviceBehavior.InstanceContextMode == InstanceContextMode.Single);
 
 			var contractNameToContractType = new Dictionary<string, Type>();
 
@@ -97,8 +87,8 @@ namespace Castle.Facilities.WcfIntegration
 
 							ed.DispatchRuntime.InstanceProvider =
 								new WindsorInstanceProvider(kernel, model,
-									contractNameToContractType[ed.ContractName],
-									serviceDescription.ServiceType
+								                            contractNameToContractType[ed.ContractName],
+								                            serviceDescription.ServiceType
 									);
 						}
 					}
@@ -106,6 +96,13 @@ namespace Castle.Facilities.WcfIntegration
 			}
 		}
 
-		#endregion
+		///<summary>
+		///  Provides the ability to inspect the service host and the service description to confirm that the service can run successfully.
+		///</summary>
+		///<param name = "serviceHostBase">The service host that is currently being constructed.</param>
+		///<param name = "serviceDescription">The service description.</param>
+		public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+		{
+		}
 	}
 }

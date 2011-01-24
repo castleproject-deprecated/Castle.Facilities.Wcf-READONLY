@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,47 +12,54 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.ServiceModel;
+
 	using Castle.Core;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.Facilities;
 
 	public abstract class AbstractServiceHostBuilder<M> : AbstractServiceHostBuilder, IServiceHostBuilder<M>
-			where M : IWcfServiceModel
+		where M : IWcfServiceModel
 	{
 		protected AbstractServiceHostBuilder(IKernel kernel)
 			: base(kernel)
 		{
 		}
 
-		#region IServiceHostBuilder Members
+		protected abstract ServiceHost CreateServiceHost(ComponentModel model, M serviceModel, params Uri[] baseAddresses);
 
-		public ServiceHost Build(ComponentModel model, M serviceModel, params Uri[] baseAddresses)
-		{
-			ValidateServiceModelInternal(model, serviceModel);
-			var serviceHost = CreateServiceHost(model, serviceModel, baseAddresses);
-			ConfigureServiceHost(serviceHost, serviceModel, model); 
-			return serviceHost;
-		}
+		protected abstract ServiceHost CreateServiceHost(ComponentModel model, Uri[] baseAddresses);
+
+		protected abstract ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses);
 
 		public ServiceHost Build(ComponentModel model, params Uri[] baseAddresses)
 		{
 			var serviceHost = CreateServiceHost(model, baseAddresses);
-			ConfigureServiceHost(serviceHost, null, model); 
+			ConfigureServiceHost(serviceHost, null, model);
 			return serviceHost;
 		}
 
 		public ServiceHost Build(Type serviceType, params Uri[] baseAddresses)
 		{
 			var serviceHost = CreateServiceHost(serviceType, baseAddresses);
-			ConfigureServiceHost(serviceHost, null, null); 
+			ConfigureServiceHost(serviceHost, null, null);
 			return serviceHost;
 		}
 
-		#endregion
+		public ServiceHost Build(ComponentModel model, M serviceModel, params Uri[] baseAddresses)
+		{
+			ValidateServiceModelInternal(model, serviceModel);
+			var serviceHost = CreateServiceHost(model, serviceModel, baseAddresses);
+			ConfigureServiceHost(serviceHost, serviceModel, model);
+			return serviceHost;
+		}
+
+		protected virtual void ValidateServiceModel(ComponentModel model, M serviceModel)
+		{
+		}
 
 		private void ValidateServiceModelInternal(ComponentModel model, M serviceModel)
 		{
@@ -60,7 +67,7 @@ namespace Castle.Facilities.WcfIntegration
 
 			foreach (var endpoint in serviceModel.Endpoints)
 			{
-				Type contract = endpoint.Contract;
+				var contract = endpoint.Contract;
 
 				if (contract == null)
 				{
@@ -72,13 +79,5 @@ namespace Castle.Facilities.WcfIntegration
 				}
 			}
 		}
-
-		protected virtual void ValidateServiceModel(ComponentModel model, M serviceModel)
-		{
-		}
-
-		protected abstract ServiceHost CreateServiceHost(ComponentModel model, M serviceModel, params Uri[] baseAddresses);
-		protected abstract ServiceHost CreateServiceHost(ComponentModel model, Uri[] baseAddresses);
-		protected abstract ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses);
 	}
 }

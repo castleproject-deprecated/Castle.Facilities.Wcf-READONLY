@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,42 +12,44 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 
 	/// <summary>
-	/// Delegate for creating channels.
+	///   Delegate for creating channels.
 	/// </summary>
 	public delegate object ChannelCreator();
-	
-	/// <summary>
-	/// The contract for building channels.
-	/// </summary>
-	public interface IChannelBuilder {}
 
 	/// <summary>
-	/// The contract for building channels.
+	///   The contract for building channels.
 	/// </summary>
-	/// <typeparam name="M">The <see cref="IWcfClientModel"/> type.</typeparam>
+	public interface IChannelBuilder
+	{
+	}
+
+	/// <summary>
+	///   The contract for building channels.
+	/// </summary>
+	/// <typeparam name = "M">The <see cref = "IWcfClientModel" /> type.</typeparam>
 	public interface IChannelBuilder<M> : IChannelBuilder
 		where M : IWcfClientModel
 	{
 		/// <summary>
-		/// Get a delegate capable of creating channels.
+		///   Get a delegate capable of creating channels.
 		/// </summary>
-		/// <param name="clientModel">The client model.</param>
-		/// <param name="burden">Receives the channel burden.</param>
-		/// <returns>The <see cref="ChannelCreator"/></returns>
+		/// <param name = "clientModel">The client model.</param>
+		/// <param name = "burden">Receives the channel burden.</param>
+		/// <returns>The <see cref = "ChannelCreator" /></returns>
 		ChannelCreator GetChannelCreator(M clientModel, out IWcfBurden burden);
 
 		/// <summary>
-		/// Get a delegate capable of creating channels.
+		///   Get a delegate capable of creating channels.
 		/// </summary>
-		/// <param name="clientModel">The client model.</param>
-		/// <param name="contract">The contract override.</param>
-		/// <param name="burden">Receives the channel burden.</param>
-		/// <returns>The <see cref="ChannelCreator"/></returns>
+		/// <param name = "clientModel">The client model.</param>
+		/// <param name = "contract">The contract override.</param>
+		/// <param name = "burden">Receives the channel burden.</param>
+		/// <returns>The <see cref = "ChannelCreator" /></returns>
 		ChannelCreator GetChannelCreator(M clientModel, Type contract, out IWcfBurden burden);
 	}
 }

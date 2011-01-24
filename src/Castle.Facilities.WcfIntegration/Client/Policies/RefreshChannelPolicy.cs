@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client.Policies
 {
+	using Castle.Facilities.WcfIntegration.Client.Proxy;
+
 	/// <summary>
-	/// Policy to recover from a <see cref="T:System.ServiceModel.CommunicationException" />
-	/// by refreshing the channel.
+	///   Policy to recover from a <see cref = "T:System.ServiceModel.CommunicationException" />
+	///   by refreshing the channel.
 	/// </summary>
 	public class RefreshChannelPolicy : AbstractWcfPolicy
 	{
 		public RefreshChannelPolicy()
 		{
-			ExecutionOrder = ExecutionOrder / 2;
+			ExecutionOrder = ExecutionOrder/2;
 		}
 
 		public override void Apply(WcfInvocation invocation)

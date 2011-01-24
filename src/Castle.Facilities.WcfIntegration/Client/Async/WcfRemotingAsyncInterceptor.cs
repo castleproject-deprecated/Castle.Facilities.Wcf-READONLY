@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10,23 +10,24 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License
+// limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
 	using System.Reflection;
 	using System.Runtime.Remoting.Messaging;
+
 	using Castle.DynamicProxy;
-	using Castle.Facilities.WcfIntegration.Async.TypeSystem;
-	using Castle.Facilities.WcfIntegration.Proxy;
+	using Castle.Facilities.WcfIntegration.Client.Async.TypeSystem;
+	using Castle.Facilities.WcfIntegration.Client.Proxy;
 
 	public class WcfRemotingAsyncInterceptor : WcfRemotingInterceptor
 	{
-		private readonly AsyncType asyncType;
-
 		[ThreadStatic]
 		private static AsyncWcfCallContext callContext;
+
+		private readonly AsyncType asyncType;
 
 		public WcfRemotingAsyncInterceptor(AsyncType asyncType, WcfClientExtension clients, IWcfChannelHolder channelHolder)
 			: base(clients, channelHolder)
@@ -34,20 +35,15 @@ namespace Castle.Facilities.WcfIntegration.Async
 			this.asyncType = asyncType;
 		}
 
-		internal AsyncWcfCallContext PrepareCall(AsyncCallback callback, object state, object proxy, object result)
+		public void EndCall(AsyncWcfCallContext context, out object[] outs)
 		{
-			var channelHolder = proxy as IWcfChannelHolder;
+			CallEndMethod(context, out outs);
+		}
 
-			if (channelHolder == null)
-			{
-				throw new ArgumentException(
-					"The given proxy is not supported.  Did you create it using the WcfFacility? " +
-					"If the answer is yes, this is probably a bug so please report it.");
-			}
-
-			var context = new AsyncWcfCallContext(callback, state, asyncType, channelHolder, result);
-			callContext = context;
-			return context;
+		public TResult EndCall<TResult>(AsyncWcfCallContext context, out object[] outs)
+		{
+			var returnMessage = CallEndMethod(context, out outs);
+			return (TResult)returnMessage.ReturnValue;
 		}
 
 		protected override bool Handles(MethodInfo method)
@@ -69,6 +65,22 @@ namespace Castle.Facilities.WcfIntegration.Async
 			CallBeginMethod(invocation, context, channelHolder);
 		}
 
+		internal AsyncWcfCallContext PrepareCall(AsyncCallback callback, object state, object proxy, object result)
+		{
+			var channelHolder = proxy as IWcfChannelHolder;
+
+			if (channelHolder == null)
+			{
+				throw new ArgumentException(
+					"The given proxy is not supported.  Did you create it using the WcfFacility? " +
+					"If the answer is yes, this is probably a bug so please report it.");
+			}
+
+			var context = new AsyncWcfCallContext(callback, state, asyncType, channelHolder, result);
+			callContext = context;
+			return context;
+		}
+
 		private void CallBeginMethod(IInvocation invocation, AsyncWcfCallContext context, IWcfChannelHolder channelHolder)
 		{
 			context.Init(invocation.Method, invocation.Arguments);
@@ -78,17 +90,6 @@ namespace Castle.Facilities.WcfIntegration.Async
 				var returnMessage = context.ChannelHolder.RealProxy.Invoke(message) as IMethodReturnMessage;
 				wcfInvocation.ReturnValue = context.PostProcess(returnMessage);
 			});
-		}
-
-		public void EndCall(AsyncWcfCallContext context, out object[] outs)
-		{
-			CallEndMethod(context, out outs);
-		}
-
-		public TResult EndCall<TResult>(AsyncWcfCallContext context, out object[] outs)
-		{	
-			var returnMessage = CallEndMethod(context, out outs);
-			return (TResult) returnMessage.ReturnValue;
 		}
 
 		private static IMethodReturnMessage CallEndMethod(AsyncWcfCallContext context, out object[] outs)

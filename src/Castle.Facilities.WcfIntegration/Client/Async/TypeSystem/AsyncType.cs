@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 #if DOTNET40
@@ -24,21 +24,27 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 	using System.Runtime.Serialization;
 	using System.ServiceModel;
 	using System.ServiceModel.Description;
+
 	using Castle.Facilities.WcfIntegration.Internal;
 
 	[Serializable]
 	public class AsyncType : TypeDelegator, ISerializable
 	{
-		private Type[] interfaces;
-		private readonly Type syncType;
+		private static readonly ConcurrentDictionary<Type, AsyncType>
+			typeToAsyncType = new ConcurrentDictionary<Type, AsyncType>();
+
 		private readonly Dictionary<RuntimeMethodHandle, MethodInfo> beginMethods;
 		private readonly Dictionary<RuntimeMethodHandle, MethodInfo> endMethods;
 		private readonly Dictionary<RuntimeMethodHandle, BeginMethod> fakeBeginMethods;
 		private readonly Dictionary<RuntimeMethodHandle, EndMethod> fakeEndMethods;
+		private readonly Type syncType;
+		private Type[] interfaces;
 		private BeginMethod lastAccessedBeginMethod;
 
-		private static readonly ConcurrentDictionary<Type, AsyncType> 
-			typeToAsyncType = new ConcurrentDictionary<Type, AsyncType>();
+		protected AsyncType(SerializationInfo info, StreamingContext context)
+			: this(GetBaseType(info))
+		{
+		}
 
 		private AsyncType(Type type) : base(type)
 		{
@@ -62,25 +68,61 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			CollectAsynchronousMethods();
 		}
 
-		protected AsyncType(SerializationInfo info, StreamingContext context)
-			: this(GetBaseType(info))
-		{
-		}
-
-		public void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			info.AddValue("syncType", syncType.AssemblyQualifiedName);
-		}
-
 		public Type SyncType
 		{
 			get { return syncType; }
 		}
 
-		public override bool IsDefined(Type attributeType, bool inherit)
+		public MethodInfo GetBeginMethod(MethodInfo syncMethod)
 		{
-			//TODO: review this piece if it needs some magic too
-			return base.IsDefined(attributeType, inherit);
+			if (syncMethod.DeclaringType == syncType)
+			{
+				BeginMethod beginMethod;
+				if (fakeBeginMethods.TryGetValue(syncMethod.MethodHandle, out beginMethod))
+				{
+					return beginMethod;
+				}
+				return beginMethods[syncMethod.MethodHandle];
+			}
+
+			foreach (var asyncType in GetInterfaces().OfType<AsyncType>()
+				.Where(i => i.SyncType == syncMethod.DeclaringType))
+			{
+				BeginMethod beginMethod;
+				if (asyncType.fakeBeginMethods.TryGetValue(syncMethod.MethodHandle, out beginMethod))
+				{
+					return beginMethod;
+				}
+				return asyncType.beginMethods[syncMethod.MethodHandle];
+			}
+
+			return null;
+		}
+
+		public MethodInfo GetEndMethod(MethodInfo syncMethod)
+		{
+			if (syncMethod.DeclaringType == syncType)
+			{
+				EndMethod endMethod;
+				if (fakeEndMethods.TryGetValue(syncMethod.MethodHandle, out endMethod))
+				{
+					return endMethod;
+				}
+				return endMethods[syncMethod.MethodHandle];
+			}
+
+			foreach (var asyncType in GetInterfaces().OfType<AsyncType>()
+				.Where(i => i.SyncType == syncMethod.DeclaringType))
+			{
+				EndMethod endMethod;
+				if (asyncType.fakeEndMethods.TryGetValue(syncMethod.MethodHandle, out endMethod))
+				{
+					return endMethod;
+				}
+				return asyncType.endMethods[syncMethod.MethodHandle];
+			}
+
+			return null;
 		}
 
 		public override Type[] GetInterfaces()
@@ -88,19 +130,12 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			return WcfUtils.SafeInitialize(ref interfaces, () =>
 			{
 				var effectiveInterfaces = syncType.GetInterfaces();
-				for (int i = 0; i < effectiveInterfaces.Length; ++i)
+				for (var i = 0; i < effectiveInterfaces.Length; ++i)
 				{
-					effectiveInterfaces[i] = GetEffectiveType(effectiveInterfaces[i]);	
+					effectiveInterfaces[i] = GetEffectiveType(effectiveInterfaces[i]);
 				}
 				return effectiveInterfaces;
 			});
-		}
-
-		public override MethodInfo[] GetMethods(BindingFlags bindingAttr)
-		{
-			var methods = syncType.GetMethods(bindingAttr);
-			return methods.Concat(fakeBeginMethods.Values.Cast<MethodInfo>())
-				.Concat(fakeEndMethods.Values.Cast<MethodInfo>()).ToArray();
 		}
 
 		public override MemberInfo[] GetMember(string name, MemberTypes type, BindingFlags bindingAttr)
@@ -117,43 +152,28 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 				return baseResult;
 			}
 
-			string potentialSyncMethodName = name.Substring("End".Length);
+			var potentialSyncMethodName = name.Substring("End".Length);
 			if (IsMatchingEndMethodForLastAccessedBeginMethod(potentialSyncMethodName))
 			{
-				return new MemberInfo[] {fakeEndMethods[lastAccessedBeginMethod.SyncMethod.MethodHandle]};
+				return new MemberInfo[] { fakeEndMethods[lastAccessedBeginMethod.SyncMethod.MethodHandle] };
 			}
 
 			return baseResult.Union(fakeEndMethods.Values.Where(m =>
-				m.SyncMethod.Name.Equals(potentialSyncMethodName, StringComparison.Ordinal)
-				).Cast<MemberInfo>()).ToArray();
+			                                                    m.SyncMethod.Name.Equals(potentialSyncMethodName, StringComparison.Ordinal)
+			                        	).Cast<MemberInfo>()).ToArray();
 		}
 
-		private bool IsMatchingEndMethodForLastAccessedBeginMethod(string potentialSyncMethodName)
+		public override MethodInfo[] GetMethods(BindingFlags bindingAttr)
 		{
-			return lastAccessedBeginMethod != null &&
-				   lastAccessedBeginMethod.SyncMethod.Name.Equals(potentialSyncMethodName, StringComparison.Ordinal);
+			var methods = syncType.GetMethods(bindingAttr);
+			return methods.Concat(fakeBeginMethods.Values.Cast<MethodInfo>())
+				.Concat(fakeEndMethods.Values.Cast<MethodInfo>()).ToArray();
 		}
 
-		public MethodInfo GetBeginMethod(MethodInfo syncMethod)
+		public override bool IsDefined(Type attributeType, bool inherit)
 		{
-			if (syncMethod.DeclaringType == syncType)
-			{
-				BeginMethod beginMethod;
-				if (fakeBeginMethods.TryGetValue(syncMethod.MethodHandle, out beginMethod))
-					return beginMethod;
-				return beginMethods[syncMethod.MethodHandle];
-			}
-
-			foreach (var asyncType in GetInterfaces().OfType<AsyncType>()
-				.Where(i => i.SyncType == syncMethod.DeclaringType))
-			{
-				BeginMethod beginMethod;
-				if (asyncType.fakeBeginMethods.TryGetValue(syncMethod.MethodHandle, out beginMethod))
-					return beginMethod;
-				return asyncType.beginMethods[syncMethod.MethodHandle];
-			}
-
-			return null;
+			//TODO: review this piece if it needs some magic too
+			return base.IsDefined(attributeType, inherit);
 		}
 
 		public void PushLastAccessedBeginMethod(BeginMethod beginMethod)
@@ -161,36 +181,9 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			lastAccessedBeginMethod = beginMethod;
 		}
 
-		public MethodInfo GetEndMethod(MethodInfo syncMethod)
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
 		{
-			if (syncMethod.DeclaringType == syncType)
-			{
-				EndMethod endMethod;
-				if (fakeEndMethods.TryGetValue(syncMethod.MethodHandle, out endMethod))
-					return endMethod;
-				return endMethods[syncMethod.MethodHandle];
-			}
-
-			foreach (var asyncType in GetInterfaces().OfType<AsyncType>()
-				.Where(i => i.SyncType == syncMethod.DeclaringType))
-			{
-				EndMethod endMethod;
-				if (asyncType.fakeEndMethods.TryGetValue(syncMethod.MethodHandle, out endMethod))
-					return endMethod;
-				return asyncType.endMethods[syncMethod.MethodHandle];
-			}
-
-			return null;
-		}
-
-		public static AsyncType GetAsyncType<T>()
-		{
-			return GetAsyncType(typeof(T));
-		}
-
-		public static AsyncType GetAsyncType(Type type)
-		{
-			return typeToAsyncType.GetOrAdd(type, addType => new AsyncType(type));
+			info.AddValue("syncType", syncType.AssemblyQualifiedName);
 		}
 
 		private void CollectAsynchronousMethods()
@@ -217,7 +210,29 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			}
 		}
 
-		private static  Type GetEffectiveType(Type asyncCandidateType)
+		private bool IsMatchingEndMethodForLastAccessedBeginMethod(string potentialSyncMethodName)
+		{
+			return lastAccessedBeginMethod != null &&
+			       lastAccessedBeginMethod.SyncMethod.Name.Equals(potentialSyncMethodName, StringComparison.Ordinal);
+		}
+
+		public static AsyncType GetAsyncType<T>()
+		{
+			return GetAsyncType(typeof(T));
+		}
+
+		public static AsyncType GetAsyncType(Type type)
+		{
+			return typeToAsyncType.GetOrAdd(type, addType => new AsyncType(type));
+		}
+
+		private static Type GetBaseType(SerializationInfo information)
+		{
+			var typeName = information.GetString("syncType");
+			return GetType(typeName);
+		}
+
+		private static Type GetEffectiveType(Type asyncCandidateType)
 		{
 			if (asyncCandidateType != null && asyncCandidateType != typeof(object))
 			{
@@ -228,12 +243,6 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 				}
 			}
 			return asyncCandidateType;
-		}
-
-		private static Type GetBaseType(SerializationInfo information)
-		{
-			string typeName = information.GetString("syncType");
-			return GetType(typeName);
 		}
 	}
 }

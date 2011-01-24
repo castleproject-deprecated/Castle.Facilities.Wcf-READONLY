@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,58 +16,20 @@ namespace Castle.Facilities.WcfIntegration.Tests.Behaviors
 {
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Service;
+
 	internal class ServiceHostListener : AbstractServiceHostAware
 	{
-		private static bool created, opening, opened, closing, closed, faulted;
+		private static bool closed;
+		private static bool closing;
+		private static bool created;
+		private static bool faulted;
+		private static bool opened;
+		private static bool opening;
 
-		public static bool CreatedCalled
+		protected override void Closed(ServiceHost serviceHost)
 		{
-			get { return created; }
-		}
-
-		public static bool OpeningCalled
-		{
-			get { return opening; }
-		}
-
-		public static bool OpenedCalled
-		{
-			get { return opened; }
-		}
-
-		public static bool ClosingCalled
-		{
-			get { return closing; }
-		}
-
-		public static bool ClosedCalled
-		{
-			get { return closed; }
-		}
-
-		public static bool FaultedCalled
-		{
-			get { return faulted; }
-		}
-
-		public static void Reset()
-		{
-			created = opening = opened = closing = closed = faulted = false;	
-		}
-
-		protected override void Created(ServiceHost serviceHost)
-		{
-			created = true;
-		}
-
-		protected override void Opening(ServiceHost serviceHost)
-		{
-			opening = true;
-		}
-
-		protected override void Opened(ServiceHost serviceHost)
-		{
-			opened = true;
+			closed = true;
 		}
 
 		protected override void Closing(ServiceHost serviceHost)
@@ -75,14 +37,59 @@ namespace Castle.Facilities.WcfIntegration.Tests.Behaviors
 			closing = true;
 		}
 
-		protected override void Closed(ServiceHost serviceHost)
+		protected override void Created(ServiceHost serviceHost)
 		{
-			closed = true;
+			created = true;
 		}
 
 		protected override void Faulted(ServiceHost serviceHost)
 		{
 			faulted = true;
+		}
+
+		protected override void Opened(ServiceHost serviceHost)
+		{
+			opened = true;
+		}
+
+		protected override void Opening(ServiceHost serviceHost)
+		{
+			opening = true;
+		}
+
+		public static bool ClosedCalled
+		{
+			get { return closed; }
+		}
+
+		public static bool ClosingCalled
+		{
+			get { return closing; }
+		}
+
+		public static bool CreatedCalled
+		{
+			get { return created; }
+		}
+
+		public static bool FaultedCalled
+		{
+			get { return faulted; }
+		}
+
+		public static bool OpenedCalled
+		{
+			get { return opened; }
+		}
+
+		public static bool OpeningCalled
+		{
+			get { return opening; }
+		}
+
+		public static void Reset()
+		{
+			created = opening = opened = closing = closed = faulted = false;
 		}
 	}
 }

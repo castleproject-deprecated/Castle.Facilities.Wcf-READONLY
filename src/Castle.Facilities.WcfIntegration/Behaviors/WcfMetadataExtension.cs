@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System;
 	using System.Linq;
@@ -20,15 +20,17 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel.Channels;
 	using System.ServiceModel.Description;
 
+	using Castle.Facilities.WcfIntegration.Service;
+
 	public class WcfMetadataExtension : AbstractServiceHostAware
 	{
-		private bool newBinding;
-		private bool enableHttpGet;
 		private string address = "mex";
+		private bool enableHttpGet;
+		private bool newBinding;
 
-		public WcfMetadataExtension NewBinding()
+		public WcfMetadataExtension AtAddress(string address)
 		{
-			newBinding = true;
+			this.address = address;
 			return this;
 		}
 
@@ -38,9 +40,9 @@ namespace Castle.Facilities.WcfIntegration
 			return this;
 		}
 
-		public WcfMetadataExtension AtAddress(string address)
+		public WcfMetadataExtension NewBinding()
 		{
-			this.address = address;
+			newBinding = true;
 			return this;
 		}
 
@@ -90,13 +92,17 @@ namespace Castle.Facilities.WcfIntegration
 					transport.PortSharingEnabled = true;
 					binding = tcpBinding;
 					if (relativeAddress == false)
+					{
 						mexAddress = string.Format("{0}/{1}", baseAddress.AbsoluteUri, address);
+					}
 				}
 				else if (StringComparer.OrdinalIgnoreCase.Equals(scheme, Uri.UriSchemeNetPipe))
 				{
 					binding = MetadataExchangeBindings.CreateMexNamedPipeBinding();
 					if (relativeAddress == false)
+					{
 						mexAddress = string.Format("{0}/{1}", baseAddress.AbsoluteUri, address);
+					}
 				}
 
 				if (binding != null)
@@ -133,11 +139,14 @@ namespace Castle.Facilities.WcfIntegration
 				.Select(endpoint => endpoint.Binding).FirstOrDefault();
 		}
 
-		private  static Uri[] GetBaseAddresses(ServiceHost serviceHost, out bool relative)
+		private static Uri[] GetBaseAddresses(ServiceHost serviceHost, out bool relative)
 		{
 			relative = true;
 			var baseAddresses = serviceHost.BaseAddresses;
-			if (baseAddresses.Count > 0) return baseAddresses.ToArray();
+			if (baseAddresses.Count > 0)
+			{
+				return baseAddresses.ToArray();
+			}
 
 			relative = false;
 			return serviceHost.Description.Endpoints.Select(endpoint => endpoint.Address.Uri).ToArray();

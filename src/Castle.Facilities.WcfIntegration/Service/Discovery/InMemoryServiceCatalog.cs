@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Discovery
 {
 #if DOTNET40
 	using System.Collections.Concurrent;
@@ -20,68 +20,67 @@ namespace Castle.Facilities.WcfIntegration
 	using System.ServiceModel;
 	using System.ServiceModel.Discovery;
 
-    public class InMemoryServiceCatalog : IServiceCatalogImplementation
-    {
-        private readonly ConcurrentDictionary<EndpointAddress, EndpointDiscoveryMetadata> services;
-		
+	public class InMemoryServiceCatalog : IServiceCatalogImplementation
+	{
+		private readonly ConcurrentDictionary<EndpointAddress, EndpointDiscoveryMetadata> services;
+
 		public InMemoryServiceCatalog()
-        {
+		{
 			services = new ConcurrentDictionary<EndpointAddress, EndpointDiscoveryMetadata>();
-        }
+		}
+
+		public virtual void FindService(FindRequestContext findRequestContext)
+		{
+			foreach (var metadata in services.Values)
+			{
+				if (findRequestContext.Criteria.IsMatch(metadata))
+				{
+					findRequestContext.AddMatchingEndpoint(metadata);
+				}
+			}
+		}
+
+		public virtual EndpointDiscoveryMetadata[] FindServices(FindCriteria criteria)
+		{
+			return services.Values.Where(criteria.IsMatch).ToArray();
+		}
 
 		public virtual EndpointDiscoveryMetadata[] ListServices()
 		{
-			return services.Values.ToArray<EndpointDiscoveryMetadata>();
+			return services.Values.ToArray();
 		}
 
-        public virtual void FindService(FindRequestContext findRequestContext)
-        {
-            foreach (var metadata in services.Values)
-            {
-                if (findRequestContext.Criteria.IsMatch(metadata))
-                {
-                    findRequestContext.AddMatchingEndpoint(metadata);
-                }
-            }
-        }
-
-        public virtual EndpointDiscoveryMetadata[] FindServices(FindCriteria criteria)
-        {
-			return services.Values.Where(criteria.IsMatch).ToArray();
-        }
-
-        public virtual void RegisterService(EndpointDiscoveryMetadata endpointDiscoveryMetadata)
-        {
-            if (AcceptService(endpointDiscoveryMetadata))
-            {
+		public virtual void RegisterService(EndpointDiscoveryMetadata endpointDiscoveryMetadata)
+		{
+			if (AcceptService(endpointDiscoveryMetadata))
+			{
 				services.AddOrUpdate(endpointDiscoveryMetadata.Address, endpointDiscoveryMetadata,
-					(address, existing) => endpointDiscoveryMetadata);
-            }
-        }
+				                     (address, existing) => endpointDiscoveryMetadata);
+			}
+		}
 
-        public virtual bool RemoveService(EndpointDiscoveryMetadata endpointDiscoveryMetadata)
-        {
-            EndpointDiscoveryMetadata serviceBehavior;
-            return services.TryRemove(endpointDiscoveryMetadata.Address, out serviceBehavior);
-        }
+		public virtual bool RemoveService(EndpointDiscoveryMetadata endpointDiscoveryMetadata)
+		{
+			EndpointDiscoveryMetadata serviceBehavior;
+			return services.TryRemove(endpointDiscoveryMetadata.Address, out serviceBehavior);
+		}
 
-        public virtual EndpointDiscoveryMetadata ResolveService(ResolveCriteria resolveCriteria)
-        {
-            foreach (EndpointDiscoveryMetadata metadata in services.Values)
-            {
-                if (resolveCriteria.Address == metadata.Address)
-                {
-                    return metadata;
-                }
-            }
-            return null;
-        }
+		public virtual EndpointDiscoveryMetadata ResolveService(ResolveCriteria resolveCriteria)
+		{
+			foreach (var metadata in services.Values)
+			{
+				if (resolveCriteria.Address == metadata.Address)
+				{
+					return metadata;
+				}
+			}
+			return null;
+		}
 
 		protected virtual bool AcceptService(EndpointDiscoveryMetadata endpointDiscoveryMetadata)
 		{
 			return true;
 		}
-    }
+	}
 #endif
 }
-

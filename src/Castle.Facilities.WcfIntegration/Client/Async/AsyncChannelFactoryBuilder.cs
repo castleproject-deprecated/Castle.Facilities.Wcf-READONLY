@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async
+namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
 	using System.Diagnostics;
@@ -21,13 +21,13 @@ namespace Castle.Facilities.WcfIntegration.Async
 	using System.ServiceModel.Description;
 
 	using Castle.DynamicProxy;
-	using Castle.Facilities.WcfIntegration.Async.TypeSystem;
+	using Castle.Facilities.WcfIntegration.Client.Async.TypeSystem;
 
 	public class AsynChannelFactoryBuilder<M> : DefaultChannelFactoryBuilder<M>
 		where M : IWcfClientModel
 	{
-		private readonly ProxyGenerator generator;
 		private readonly AsyncChannelFactoryProxyHook asyncChannelFactoryProxyHook;
+		private readonly ProxyGenerator generator;
 
 		public AsynChannelFactoryBuilder(ProxyGenerator generator)
 		{
@@ -35,8 +35,8 @@ namespace Castle.Facilities.WcfIntegration.Async
 			this.generator = generator;
 		}
 
-		public override ChannelFactory CreateChannelFactory(Type channelFactoryType, M clientModel, 
-															params object[] constructorArgs)
+		public override ChannelFactory CreateChannelFactory(Type channelFactoryType, M clientModel,
+		                                                    params object[] constructorArgs)
 		{
 			if (!clientModel.WantsAsyncCapability)
 			{
@@ -55,7 +55,7 @@ namespace Castle.Facilities.WcfIntegration.Async
 
 		private static void ReplaceServiceEndpointAsyncContracts(object[] constructorArgs)
 		{
-			for (int i = 0; i < constructorArgs.Length; ++i)
+			for (var i = 0; i < constructorArgs.Length; ++i)
 			{
 				var endpoint = constructorArgs[i] as ServiceEndpoint;
 				if (endpoint != null)
@@ -83,26 +83,9 @@ namespace Castle.Facilities.WcfIntegration.Async
 	}
 
 	#region Class AsyncChannelFactoryProxyHook
-	
-	class AsyncChannelFactoryProxyHook : IProxyGenerationHook
+
+	internal class AsyncChannelFactoryProxyHook : IProxyGenerationHook
 	{
-		public bool ShouldInterceptMethod(Type type, MethodInfo methodInfo)
-		{
-			if (methodInfo.Name == "CreateDescription")
-			{
-				return true;
-			}
-			return false;
-		}
-
-		public void NonProxyableMemberNotification(Type type, MemberInfo memberInfo)
-		{
-		}
-
-		public void MethodsInspected()
-		{
-		}
-
 		public override bool Equals(object obj)
 		{
 			return obj != null && GetType().Equals(obj.GetType());
@@ -112,13 +95,30 @@ namespace Castle.Facilities.WcfIntegration.Async
 		{
 			return GetType().GetHashCode();
 		}
+
+		public void MethodsInspected()
+		{
+		}
+
+		public void NonProxyableMemberNotification(Type type, MemberInfo memberInfo)
+		{
+		}
+
+		public bool ShouldInterceptMethod(Type type, MethodInfo methodInfo)
+		{
+			if (methodInfo.Name == "CreateDescription")
+			{
+				return true;
+			}
+			return false;
+		}
 	}
 
 	#endregion
 
 	#region Class CreateDescriptionInterceptor
 
-	class CreateDescriptionInterceptor : IInterceptor
+	internal class CreateDescriptionInterceptor : IInterceptor
 	{
 		private bool applied;
 
@@ -131,25 +131,6 @@ namespace Castle.Facilities.WcfIntegration.Async
 			}
 
 			invocation.Proceed();
-		}
-
-		private static void SetAsyncTypeAsTargetType(object target)
-		{
-			var channelFactoryType = FindTypeContainingChannelTypeField(target.GetType());
-			if (channelFactoryType == null)
-			{
-				// This should literally never happen...
-				return;
-			}
-
-			var channelTypeField = GetChannelTypeField(channelFactoryType);
-			var channelType = (Type)channelTypeField.GetValue(target);
-			channelTypeField.SetValue(target, AsyncType.GetAsyncType(channelType));
-		}
-
-		private static FieldInfo GetChannelTypeField(Type channelFactoryType)
-		{
-			return channelFactoryType.GetField("channelType", BindingFlags.Instance | BindingFlags.NonPublic);
 		}
 
 		private static Type FindTypeContainingChannelTypeField(Type channelFactoryType)
@@ -167,6 +148,25 @@ namespace Castle.Facilities.WcfIntegration.Async
 			} while (channelFactoryType != null);
 
 			return null;
+		}
+
+		private static FieldInfo GetChannelTypeField(Type channelFactoryType)
+		{
+			return channelFactoryType.GetField("channelType", BindingFlags.Instance | BindingFlags.NonPublic);
+		}
+
+		private static void SetAsyncTypeAsTargetType(object target)
+		{
+			var channelFactoryType = FindTypeContainingChannelTypeField(target.GetType());
+			if (channelFactoryType == null)
+			{
+				// This should literally never happen...
+				return;
+			}
+
+			var channelTypeField = GetChannelTypeField(channelFactoryType);
+			var channelType = (Type)channelTypeField.GetValue(target);
+			channelTypeField.SetValue(target, AsyncType.GetAsyncType(channelType));
 		}
 	}
 

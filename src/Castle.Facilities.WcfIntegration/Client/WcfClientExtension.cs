@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 	using System.Collections.Generic;
@@ -23,7 +23,12 @@ namespace Castle.Facilities.WcfIntegration
 	using Castle.Core;
 	using Castle.DynamicProxy;
 	using Castle.Facilities.TypedFactory;
-	using Castle.Facilities.WcfIntegration.Async;
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Client.Async;
+	using Castle.Facilities.WcfIntegration.Client.Default;
+	using Castle.Facilities.WcfIntegration.Client.Duplex;
+	using Castle.Facilities.WcfIntegration.Client.Policies;
+	using Castle.Facilities.WcfIntegration.Client.Rest;
 	using Castle.Facilities.WcfIntegration.Internal;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.LifecycleConcerns;
@@ -31,7 +36,7 @@ namespace Castle.Facilities.WcfIntegration
 
 	public class WcfClientExtension : IDisposable
 	{
-		private static readonly IWcfPolicy[] ReconnectChannelPolicy = new[] { new ReconnectChannelPolicy() };
+		private static readonly IWcfPolicy[] reconnectChannelPolicy = new[] { new ReconnectChannelPolicy() };
 		private readonly List<Func<Uri, Binding>> bindingPolicies = new List<Func<Uri, Binding>>();
 		private readonly ProxyGenerator proxyGenerator = new ProxyGenerator();
 		private Action afterInit;
@@ -42,7 +47,7 @@ namespace Castle.Facilities.WcfIntegration
 
 		public WcfClientExtension()
 		{
-			DefaultChannelPolicy = ReconnectChannelPolicy;
+			DefaultChannelPolicy = reconnectChannelPolicy;
 		}
 
 		public TimeSpan? CloseTimeout
@@ -91,34 +96,6 @@ namespace Castle.Facilities.WcfIntegration
 		{
 		}
 
-		internal void AddChannelBuilder(Type builder, bool force)
-		{
-			if (typeof(IChannelBuilder).IsAssignableFrom(builder) == false)
-			{
-				throw new ArgumentException(string.Format(
-					"The type {0} does not represent an IChannelBuilder.",
-					builder.FullName), "builder");
-			}
-
-			var channelBuilder = WcfUtils.GetClosedGenericDefinition(typeof(IChannelBuilder<>), builder);
-
-			if (channelBuilder == null)
-			{
-				throw new ArgumentException(string.Format(
-					"The client model cannot be inferred from the builder {0}.  Did you implement IChannelBuilder<>?",
-					builder.FullName), "builder");
-			}
-
-			if (kernel == null)
-			{
-				afterInit += () => RegisterChannelBuilder(channelBuilder, builder, force);
-			}
-			else
-			{
-				RegisterChannelBuilder(channelBuilder, builder, force);
-			}
-		}
-
 		internal void Init(IKernel kernel, WcfFacility facility)
 		{
 			this.kernel = kernel;
@@ -148,6 +125,34 @@ namespace Castle.Facilities.WcfIntegration
 			{
 				afterInit();
 				afterInit = null;
+			}
+		}
+
+		private void AddChannelBuilder(Type builder, bool force)
+		{
+			if (typeof(IChannelBuilder).IsAssignableFrom(builder) == false)
+			{
+				throw new ArgumentException(string.Format(
+					"The type {0} does not represent an IChannelBuilder.",
+					builder.FullName), "builder");
+			}
+
+			var channelBuilder = WcfUtils.GetClosedGenericDefinition(typeof(IChannelBuilder<>), builder);
+
+			if (channelBuilder == null)
+			{
+				throw new ArgumentException(string.Format(
+					"The client model cannot be inferred from the builder {0}.  Did you implement IChannelBuilder<>?",
+					builder.FullName), "builder");
+			}
+
+			if (kernel == null)
+			{
+				afterInit += () => RegisterChannelBuilder(channelBuilder, builder, force);
+			}
+			else
+			{
+				RegisterChannelBuilder(channelBuilder, builder, force);
 			}
 		}
 

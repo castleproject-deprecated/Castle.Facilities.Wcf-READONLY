@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -10,14 +10,15 @@
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
-// limitations under the License
+// limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Proxy
+namespace Castle.Facilities.WcfIntegration.Client.Proxy
 {
 	using System;
 	using System.Linq;
 	using System.Reflection;
 	using System.Runtime.Remoting.Messaging;
+
 	using Castle.DynamicProxy;
 
 	public class WcfRemotingInterceptor : IWcfInterceptor
@@ -41,6 +42,11 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			PerformInvocation(invocation, channelHolder);
 		}
 
+		protected virtual bool Handles(MethodInfo method)
+		{
+			return true;
+		}
+
 		protected virtual void PerformInvocation(IInvocation invocation, IWcfChannelHolder channelHolder)
 		{
 			PerformInvocation(invocation, channelHolder, wcfInvocation =>
@@ -54,16 +60,6 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 				}
 				wcfInvocation.ReturnValue = returnMessage.ReturnValue;
 			});
-		}
-
-		bool IWcfInterceptor.Handles(MethodInfo method)
-		{
-			return Handles(method);
-		}
-
-		protected virtual bool Handles(MethodInfo method)
-		{
-			return true;
 		}
 
 		protected void PerformInvocation(IInvocation invocation, IWcfChannelHolder channelHolder, Action<WcfInvocation> action)
@@ -83,6 +79,11 @@ namespace Castle.Facilities.WcfIntegration.Proxy
 			var nextIndex = policyIndex + 1;
 			wcfInvocation.SetProceedDelegate(() => InvokeChannelPipeline(nextIndex, wcfInvocation, action));
 			pipeline[policyIndex].Apply(wcfInvocation);
+		}
+
+		bool IWcfInterceptor.Handles(MethodInfo method)
+		{
+			return Handles(method);
 		}
 
 		private static IWcfPolicy[] CreateChannelPipeline(WcfClientExtension clients, IWcfChannelHolder channelHolder)

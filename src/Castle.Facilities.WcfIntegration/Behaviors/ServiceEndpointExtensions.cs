@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,17 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System.Collections.Generic;
 	using System.ServiceModel.Description;
+
 	using Castle.MicroKernel;
 
 	internal class ServiceEndpointExtensions : IWcfExtensionVisitor
 	{
 		private readonly ServiceEndpoint endpoint;
-		private readonly bool withContract;
 		private readonly IKernel kernel;
+		private readonly bool withContract;
 		private IWcfBurden burden;
 
 		public ServiceEndpointExtensions(ServiceEndpoint endpoint, bool withContract, IKernel kernel)
@@ -46,13 +47,7 @@ namespace Castle.Facilities.WcfIntegration
 
 		public ServiceEndpointExtensions Install(IWcfBurden burden, params IWcfExtension[] extensions)
 		{
-			return Install((ICollection<IWcfExtension>)extensions, burden);
-		}
-
-		#region IWcfExtensionVisitor Members
-
-		void IWcfExtensionVisitor.VisitServiceExtension(IWcfServiceExtension extension)
-		{
+			return Install(extensions, burden);
 		}
 
 		void IWcfExtensionVisitor.VisitChannelExtension(IWcfChannelExtension extension)
@@ -64,6 +59,8 @@ namespace Castle.Facilities.WcfIntegration
 			extension.Install(endpoint, withContract, kernel, burden);
 		}
 
-		#endregion
+		void IWcfExtensionVisitor.VisitServiceExtension(IWcfServiceExtension extension)
+		{
+		}
 	}
 }

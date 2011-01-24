@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,48 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service.Default
 {
 	using System;
 	using System.ServiceModel;
+
 	using Castle.Core;
 	using Castle.MicroKernel;
 
 	/// <summary>
-	/// The default implementation of <see cref="IServiceHostBuilder{M}"/>.
+	///   The default implementation of <see cref = "IServiceHostBuilder{M}" />.
 	/// </summary>
 	public class DefaultServiceHostBuilder : AbstractServiceHostBuilder<DefaultServiceModel>
 	{
 		/// <summary>
-		/// Constructs a new <see cref="DefaultServiceHostBuilder"/>.
+		///   Constructs a new <see cref = "DefaultServiceHostBuilder" />.
 		/// </summary>
-		/// <param name="kernel">The kernel.</param>
+		/// <param name = "kernel">The kernel.</param>
 		public DefaultServiceHostBuilder(IKernel kernel)
 			: base(kernel)
 		{
 		}
 
-		#region AbstractServiceHostBuilder Members
-
-		protected override ServiceHost CreateServiceHost(ComponentModel model, 
-			                                             DefaultServiceModel serviceModel,
-			                                             params Uri[] baseAddresses)
+		protected override ServiceHost CreateServiceHost(ComponentModel model,
+		                                                 DefaultServiceModel serviceModel,
+		                                                 params Uri[] baseAddresses)
 		{
 			return CreateServiceHost(model, GetEffectiveBaseAddresses(serviceModel, baseAddresses));
 		}
 
 		protected override ServiceHost CreateServiceHost(ComponentModel model,
-													     params Uri[] baseAddresses)
+		                                                 params Uri[] baseAddresses)
 		{
 			return new DefaultServiceHost(model, baseAddresses);
 		}
 
 		protected override ServiceHost CreateServiceHost(Type serviceType,
-														 params Uri[] baseAddresses)
+		                                                 params Uri[] baseAddresses)
 		{
 			return new DefaultServiceHost(serviceType, baseAddresses);
 		}
-
-		#endregion
 	}
 }

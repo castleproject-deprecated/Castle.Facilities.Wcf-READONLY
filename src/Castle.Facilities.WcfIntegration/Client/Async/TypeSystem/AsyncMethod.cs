@@ -1,4 +1,4 @@
-// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
+namespace Castle.Facilities.WcfIntegration.Client.Async.TypeSystem
 {
 	using System;
 	using System.Globalization;
@@ -48,20 +48,13 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			handle = ObtainNewHandle(syncMethod);
 		}
 
+		public abstract override string Name { get; }
+		public abstract override Type ReturnType { get; }
 		public AsyncType AsyncType { get; private set; }
 
-		public abstract override Type ReturnType { get; }
-
-		public override ICustomAttributeProvider ReturnTypeCustomAttributes
+		public override MethodAttributes Attributes
 		{
-			get { return ReturnParameter; }
-		}
-
-		public abstract override string Name { get; }
-
-		public override Type ReflectedType
-		{
-			get { return AsyncType; }
+			get { return SyncMethod.Attributes; }
 		}
 
 		public override RuntimeMethodHandle MethodHandle
@@ -69,16 +62,53 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 			get { return handle; }
 		}
 
-		public override MethodAttributes Attributes
+		public override Type ReflectedType
 		{
-			get { return SyncMethod.Attributes; }
+			get { return AsyncType; }
 		}
-
-		public MethodInfo SyncMethod { get; private set; }
 
 		public override ParameterInfo ReturnParameter
 		{
 			get { return new AsyncMethodParameter(ReturnType, this); }
+		}
+
+		public override ICustomAttributeProvider ReturnTypeCustomAttributes
+		{
+			get { return ReturnParameter; }
+		}
+
+		public MethodInfo SyncMethod { get; private set; }
+
+		public override MethodInfo GetBaseDefinition()
+		{
+			return this;
+		}
+
+		public override object[] GetCustomAttributes(bool inherit)
+		{
+			return SyncMethod.GetCustomAttributes(inherit);
+		}
+
+		public override MethodImplAttributes GetMethodImplementationFlags()
+		{
+			return SyncMethod.GetMethodImplementationFlags();
+		}
+
+		public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters,
+		                              CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override bool IsDefined(Type attributeType, bool inherit)
+		{
+			return SyncMethod.IsDefined(attributeType, inherit);
+		}
+
+		protected virtual RuntimeMethodHandle ObtainNewHandle(MethodInfo syncMethod)
+		{
+			//NOTE: this is an ugly hack, but it'll work - we only need this handle to be different than syncMethod' handle
+			return HandleProvider.GetNextHandle();
 		}
 
 		protected void VerifyContract(MethodInfo syncMethod)
@@ -100,38 +130,6 @@ namespace Castle.Facilities.WcfIntegration.Async.TypeSystem
 					"which suggests it already participating in an asynchronous pattern",
 					"syncMethod");
 			}
-		}
-
-		protected virtual RuntimeMethodHandle ObtainNewHandle(MethodInfo syncMethod)
-		{
-			//NOTE: this is an ugly hack, but it'll work - we only need this handle to be different than syncMethod' handle
-			return HandleProvider.GetNextHandle();
-		}
-
-		public override object[] GetCustomAttributes(bool inherit)
-		{
-			return SyncMethod.GetCustomAttributes(inherit);
-		}
-
-		public override bool IsDefined(Type attributeType, bool inherit)
-		{
-			return SyncMethod.IsDefined(attributeType, inherit);
-		}
-
-		public override MethodImplAttributes GetMethodImplementationFlags()
-		{
-			return SyncMethod.GetMethodImplementationFlags();
-		}
-
-		public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters,
-									  CultureInfo culture)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override MethodInfo GetBaseDefinition()
-		{
-			return this;
 		}
 	}
 }

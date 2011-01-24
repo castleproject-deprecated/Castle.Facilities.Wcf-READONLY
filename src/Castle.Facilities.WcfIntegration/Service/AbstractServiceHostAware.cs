@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,48 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System.ServiceModel;
 
 	/// <summary>
-	/// Abstarct implementation of <see cref="IServiceHostAware"/>
+	///   Abstarct implementation of <see cref = "IServiceHostAware" />
 	/// </summary>
 	public abstract class AbstractServiceHostAware : IServiceHostAware
 	{
-		void IServiceHostAware.Created(ServiceHost serviceHost)
+		protected virtual void Closed(ServiceHost serviceHost)
 		{
-			Created(serviceHost);
+		}
+
+		protected virtual void Closing(ServiceHost serviceHost)
+		{
 		}
 
 		protected virtual void Created(ServiceHost serviceHost)
 		{
 		}
 
-		void IServiceHostAware.Opening(ServiceHost serviceHost)
+		protected virtual void Faulted(ServiceHost serviceHost)
 		{
-			Opening(serviceHost);
-		}
-
-		protected virtual void Opening(ServiceHost serviceHost)
-		{
-		}
-
-		void IServiceHostAware.Opened(ServiceHost serviceHost)
-		{
-			Opened(serviceHost);
 		}
 
 		protected virtual void Opened(ServiceHost serviceHost)
 		{
 		}
 
-		void IServiceHostAware.Closing(ServiceHost serviceHost)
-		{
-			Closing(serviceHost);
-		}
-
-		protected virtual void Closing(ServiceHost serviceHost)
+		protected virtual void Opening(ServiceHost serviceHost)
 		{
 		}
 
@@ -62,8 +50,14 @@ namespace Castle.Facilities.WcfIntegration
 			Closed(serviceHost);
 		}
 
-		protected virtual void Closed(ServiceHost serviceHost)
+		void IServiceHostAware.Closing(ServiceHost serviceHost)
 		{
+			Closing(serviceHost);
+		}
+
+		void IServiceHostAware.Created(ServiceHost serviceHost)
+		{
+			Created(serviceHost);
 		}
 
 		void IServiceHostAware.Faulted(ServiceHost serviceHost)
@@ -71,8 +65,14 @@ namespace Castle.Facilities.WcfIntegration
 			Faulted(serviceHost);
 		}
 
-		protected virtual void Faulted(ServiceHost serviceHost)
+		void IServiceHostAware.Opened(ServiceHost serviceHost)
 		{
+			Opened(serviceHost);
+		}
+
+		void IServiceHostAware.Opening(ServiceHost serviceHost)
+		{
+			Opening(serviceHost);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration
+namespace Castle.Facilities.WcfIntegration.Behaviors
 {
 	using System.Collections.ObjectModel;
 	using System.ServiceModel;
@@ -28,30 +28,6 @@ namespace Castle.Facilities.WcfIntegration
 		{
 			this.errorHandler = errorHandler;
 		}
-
-		#region IServiceBehavior
-
-		public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase,
-										 Collection<ServiceEndpoint> endpoints,
-										 BindingParameterCollection bindingParameters)
-		{
-		}
-
-		public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
-		{
-			foreach (ChannelDispatcher channelDispatcher in serviceHostBase.ChannelDispatchers)
-			{
-				channelDispatcher.ErrorHandlers.Add(errorHandler);
-			}
-		}
-
-		public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
-		{
-		}
-
-		#endregion
-
-		#region IEndpointBehavior
 
 		public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
 		{
@@ -71,6 +47,22 @@ namespace Castle.Facilities.WcfIntegration
 		{
 		}
 
-		#endregion
+		public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase,
+		                                 Collection<ServiceEndpoint> endpoints,
+		                                 BindingParameterCollection bindingParameters)
+		{
+		}
+
+		public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+		{
+			foreach (ChannelDispatcher channelDispatcher in serviceHostBase.ChannelDispatchers)
+			{
+				channelDispatcher.ErrorHandlers.Add(errorHandler);
+			}
+		}
+
+		public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+		{
+		}
 	}
 }

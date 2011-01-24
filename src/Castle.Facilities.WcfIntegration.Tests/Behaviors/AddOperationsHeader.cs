@@ -1,4 +1,4 @@
-﻿// Copyright 2004-2010 Castle Project - http://www.castleproject.org/
+﻿// Copyright 2004-2011 Castle Project - http://www.castleproject.org/
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@ namespace Castle.Facilities.WcfIntegration.Tests.Behaviors
 {
 	using System.Collections;
 	using System.ServiceModel.Channels;
-	using Castle.Facilities.WcfIntegration.Behaviors;
+
+	using Castle.Facilities.WcfIntegration.Behaviors.Lifecyle;
 
 	public class AddOperationsHeader : AbstractMessageAction
 	{
 		private readonly string name;
 		private readonly object value;
 
-		public AddOperationsHeader(string name, object value) 
+		public AddOperationsHeader(string name, object value)
 			: base(MessageLifecycle.All)
 		{
 			this.name = name;
@@ -32,7 +33,7 @@ namespace Castle.Facilities.WcfIntegration.Tests.Behaviors
 
 		public override bool Perform(ref Message message, MessageLifecycle lifecyle, IDictionary state)
 		{
-			MessageHeader header = MessageHeader.CreateHeader(name, "", value, false);
+			var header = MessageHeader.CreateHeader(name, "", value, false);
 			message.Headers.Add(header);
 			return true;
 		}
