@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Client
+namespace Castle.Facilities.WcfIntegration
 {
 	using System;
 
+	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Model;
 
 	public interface IWcfClientFactory

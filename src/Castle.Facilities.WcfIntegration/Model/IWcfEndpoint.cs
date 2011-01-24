@@ -20,7 +20,7 @@ namespace Castle.Facilities.WcfIntegration.Model
 	using Castle.Facilities.WcfIntegration.Behaviors;
 
 	/// <summary>
-	///   Contract for all WCF endpoints.
+	///   Contract for all WCF endpoints. Use <see cref = "WcfEndpoint" /> class to construct implementations of this interface.
 	/// </summary>
 	public interface IWcfEndpoint
 	{
