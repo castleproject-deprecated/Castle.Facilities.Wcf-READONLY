@@ -15,10 +15,12 @@
 namespace Castle.Facilities.WcfIntegration.Client.Async
 {
 	using System;
+	using System.ComponentModel;
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class WcfAsync
 	{
-		private static readonly AsyncCallback Nothing = delegate { };
+		private static readonly AsyncCallback nothing = delegate { };
 
 		/// <summary>
 		///   Begins an asynchronous call of <paramref name = "method" /> on given <paramref name = "proxy" />.
@@ -29,9 +31,9 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
-			this TProxy proxy, Func<TProxy, TResult> method)
+			this TProxy proxy, Func<TProxy, TResult> method) where TProxy : class
 		{
-			return BeginWcfCall(proxy, method, Nothing, null);
+			return BeginWcfCall(proxy, method, nothing, null);
 		}
 
 		/// <summary>
@@ -46,7 +48,7 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
 			this TProxy proxy, Func<TProxy, TResult> method,
-			Action<IWcfAsyncCall<TResult>> callback, object state)
+			Action<IWcfAsyncCall<TResult>> callback, object state) where TProxy : class
 		{
 			var call = new AsyncWcfCall<TProxy, TResult>(proxy, method);
 			call.Begin(ar => callback(call), state);
@@ -65,7 +67,7 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall<TResult> BeginWcfCall<TProxy, TResult>(
 			this TProxy proxy, Func<TProxy, TResult> method,
-			AsyncCallback callback, object state)
+			AsyncCallback callback, object state) where TProxy : class
 		{
 			var call = new AsyncWcfCall<TProxy, TResult>(proxy, method);
 			call.Begin(ar => callback(call), state);
@@ -79,9 +81,9 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <param name = "proxy">The proxy.</param>
 		/// <param name = "method">The delegate encapsulating the invocation of the method.</param>
 		/// <returns>The async call handle.</returns>
-		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method)
+		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method) where TProxy : class
 		{
-			return BeginWcfCall(proxy, method, Nothing, null);
+			return BeginWcfCall(proxy, method, nothing, null);
 		}
 
 		/// <summary>
@@ -94,7 +96,7 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <param name = "state">The asynchronous state.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
-		                                                 Action<IWcfAsyncCall> callback, object state)
+		                                                 Action<IWcfAsyncCall> callback, object state) where TProxy : class
 		{
 			var call = new AsyncWcfCall<TProxy>(proxy, method);
 			call.Begin(ar => callback(call), state);
@@ -111,7 +113,7 @@ namespace Castle.Facilities.WcfIntegration.Client.Async
 		/// <param name = "state">The asynchronous state.</param>
 		/// <returns>The async call handle.</returns>
 		public static IWcfAsyncCall BeginWcfCall<TProxy>(this TProxy proxy, Action<TProxy> method,
-		                                                 AsyncCallback callback, object state)
+		                                                 AsyncCallback callback, object state) where TProxy : class
 		{
 			var call = new AsyncWcfCall<TProxy>(proxy, method);
 			call.Begin(ar => callback(call), state);
