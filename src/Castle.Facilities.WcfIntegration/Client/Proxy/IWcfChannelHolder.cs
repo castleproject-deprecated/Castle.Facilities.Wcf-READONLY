@@ -19,6 +19,8 @@ namespace Castle.Facilities.WcfIntegration.Client.Proxy
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	public interface IWcfChannelHolder : IDisposable
 	{
 		IChannel Channel { get; }

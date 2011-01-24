@@ -25,11 +25,11 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using Castle.Facilities.TypedFactory;
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Client.Async;
-	using Castle.Facilities.WcfIntegration.Client.Default;
 	using Castle.Facilities.WcfIntegration.Client.Duplex;
 	using Castle.Facilities.WcfIntegration.Client.Policies;
 	using Castle.Facilities.WcfIntegration.Client.Rest;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.LifecycleConcerns;
 	using Castle.MicroKernel.Registration;

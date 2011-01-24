@@ -18,6 +18,8 @@ namespace Castle.Facilities.WcfIntegration.Service
 	using System.ServiceModel;
 	using System.ServiceModel.Description;
 
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	internal class ServiceHostExtensions : IWcfExtensionVisitor

@@ -20,7 +20,7 @@ namespace Castle.Facilities.WcfIntegration.Tests.Duplex
 	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Client.Async;
 	using Castle.Facilities.WcfIntegration.Client.Duplex;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.Facilities.WcfIntegration.Tests.Components;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;

@@ -17,6 +17,8 @@ namespace Castle.Facilities.WcfIntegration.Client.Duplex
 	using System;
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	public class DuplexClientModel : WcfClientModel<DuplexClientModel>
 	{
 		private InstanceContext callbackContext;

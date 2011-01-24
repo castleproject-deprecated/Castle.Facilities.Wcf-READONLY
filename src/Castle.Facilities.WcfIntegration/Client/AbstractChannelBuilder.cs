@@ -25,6 +25,7 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Client.Discovery;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	public abstract class AbstractChannelBuilder : IWcfEndpointVisitor

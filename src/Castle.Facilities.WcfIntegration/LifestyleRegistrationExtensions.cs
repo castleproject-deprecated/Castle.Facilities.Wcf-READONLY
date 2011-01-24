@@ -16,7 +16,7 @@ namespace Castle.Facilities.WcfIntegration
 {
 	using System.ComponentModel;
 
-	using Castle.Facilities.WcfIntegration.Lifestyles;
+	using Castle.Facilities.WcfIntegration.Model.Lifestyles;
 	using Castle.MicroKernel.Registration;
 	using Castle.MicroKernel.Registration.Lifestyle;
 

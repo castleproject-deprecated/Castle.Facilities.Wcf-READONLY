@@ -19,6 +19,7 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 	using Castle.Core;
 	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	public class WcfChannelExtensions : AbstractWcfExtension, IWcfChannelExtension

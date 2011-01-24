@@ -20,6 +20,7 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using System.ServiceModel.Description;
 
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	public abstract class AbstractChannelBuilder<M> : AbstractChannelBuilder, IChannelBuilder<M>

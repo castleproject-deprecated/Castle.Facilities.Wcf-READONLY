@@ -31,11 +31,10 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using Castle.Facilities.WcfIntegration.Behaviors.Logging;
 	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Client.Async;
-	using Castle.Facilities.WcfIntegration.Client.Default;
 	using Castle.Facilities.WcfIntegration.Client.Discovery;
 	using Castle.Facilities.WcfIntegration.Client.Policies;
 	using Castle.Facilities.WcfIntegration.Demo;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.MicroKernel.Facilities;
 	using Castle.MicroKernel.Registration;

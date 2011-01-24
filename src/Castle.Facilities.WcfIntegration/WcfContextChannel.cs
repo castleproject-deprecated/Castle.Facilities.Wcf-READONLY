@@ -18,8 +18,16 @@ namespace Castle.Facilities.WcfIntegration
 
 	using Castle.Facilities.WcfIntegration.Client.Proxy;
 
+	/// <summary>
+	/// Helper class for obtaining <see cref = "IContextChannel" /> associated with client-side proxies
+	/// </summary>
 	public static class WcfContextChannel
 	{
+		/// <summary>
+		///   Obtains <see cref = "IContextChannel" /> for given <paramref name = "target" />
+		/// </summary>
+		/// <param name = "target"></param>
+		/// <returns></returns>
 		public static IContextChannel For(object target)
 		{
 			var channelHolder = target as IWcfChannelHolder;

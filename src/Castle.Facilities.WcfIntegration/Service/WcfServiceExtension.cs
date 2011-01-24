@@ -27,7 +27,7 @@ namespace Castle.Facilities.WcfIntegration.Service
 	using Castle.Core;
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Internal;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.Facilities.WcfIntegration.Service.Rest;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.Registration;

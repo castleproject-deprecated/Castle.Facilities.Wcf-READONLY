@@ -17,8 +17,7 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using System;
 	using System.ServiceModel;
 
-	using Castle.Facilities.WcfIntegration.Lifestyles;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.Facilities.WcfIntegration.Tests.Components;
 	using Castle.MicroKernel.Registration;

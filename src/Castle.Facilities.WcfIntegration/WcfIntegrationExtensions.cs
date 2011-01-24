@@ -19,8 +19,9 @@ namespace Castle.Facilities.WcfIntegration
 	using System.Linq;
 	using System.ServiceModel.Description;
 
-	using Castle.Facilities.WcfIntegration.Client.Default;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Client;
+	using Castle.Facilities.WcfIntegration.Model;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.MicroKernel.Registration;
 
 	[EditorBrowsable(EditorBrowsableState.Never)]

@@ -20,7 +20,7 @@ namespace Castle.Facilities.WcfIntegration.Tests
 
 	using Castle.Core;
 	using Castle.DynamicProxy;
-	using Castle.Facilities.WcfIntegration.Service.Default;
+	using Castle.Facilities.WcfIntegration.Service;
 	using Castle.Facilities.WcfIntegration.Tests.Behaviors;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;

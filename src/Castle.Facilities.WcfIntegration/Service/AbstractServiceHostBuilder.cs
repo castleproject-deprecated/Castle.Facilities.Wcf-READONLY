@@ -23,6 +23,7 @@ namespace Castle.Facilities.WcfIntegration.Service
 	using Castle.Core;
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	public abstract class AbstractServiceHostBuilder

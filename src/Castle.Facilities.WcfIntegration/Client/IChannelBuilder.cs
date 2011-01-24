@@ -16,6 +16,8 @@ namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	/// <summary>
 	///   Delegate for creating channels.
 	/// </summary>

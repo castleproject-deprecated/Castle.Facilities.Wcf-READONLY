@@ -17,6 +17,7 @@ namespace Castle.Facilities.WcfIntegration.Internal
 	using System.ServiceModel;
 
 	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Model;
 
 	public class WcfBurdenExtension<T> : AbstractExtension<T>, IWcfCleanUp
 		where T : class, IExtensibleObject<T>

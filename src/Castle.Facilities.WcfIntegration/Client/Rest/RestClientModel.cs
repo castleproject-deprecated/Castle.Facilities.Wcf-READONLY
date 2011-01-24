@@ -16,6 +16,8 @@ namespace Castle.Facilities.WcfIntegration.Client.Rest
 {
 	using System;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	public class RestClientModel : WcfClientModel<RestClientModel>
 	{
 		public RestClientModel()

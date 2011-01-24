@@ -19,7 +19,6 @@ namespace Castle.Facilities.WcfIntegration.Tests
 
 	using Castle.Facilities.WcfIntegration.Demo;
 	using Castle.Facilities.WcfIntegration.Service;
-	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.MicroKernel.Registration;
 	using Castle.Windsor;
 

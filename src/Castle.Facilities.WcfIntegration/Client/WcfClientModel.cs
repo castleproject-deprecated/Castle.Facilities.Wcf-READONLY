@@ -19,6 +19,7 @@ namespace Castle.Facilities.WcfIntegration.Client
 
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Behaviors.Security;
+	using Castle.Facilities.WcfIntegration.Model;
 
 	public abstract class WcfClientModelBase : IWcfClientModel
 	{

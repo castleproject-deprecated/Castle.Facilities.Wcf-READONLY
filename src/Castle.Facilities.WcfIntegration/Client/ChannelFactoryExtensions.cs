@@ -17,6 +17,8 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using System.Collections.Generic;
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Behaviors;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	internal class ChannelFactoryExtensions : IWcfExtensionVisitor

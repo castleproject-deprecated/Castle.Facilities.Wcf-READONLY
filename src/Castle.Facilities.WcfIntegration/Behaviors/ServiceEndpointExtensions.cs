@@ -17,6 +17,7 @@ namespace Castle.Facilities.WcfIntegration.Behaviors
 	using System.Collections.Generic;
 	using System.ServiceModel.Description;
 
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	internal class ServiceEndpointExtensions : IWcfExtensionVisitor

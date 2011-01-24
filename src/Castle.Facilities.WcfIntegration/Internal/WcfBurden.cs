@@ -16,6 +16,7 @@ namespace Castle.Facilities.WcfIntegration.Internal
 {
 	using System.Collections.Generic;
 
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 
 	public class WcfBurden : IWcfBurden

@@ -16,6 +16,8 @@ namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System.ServiceModel;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	internal class ChannelFactoryHolder : IWcfCleanUp
 	{
 		private readonly ChannelFactory channelFactory;

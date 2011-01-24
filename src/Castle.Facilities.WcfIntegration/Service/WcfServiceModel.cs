@@ -16,61 +16,12 @@ namespace Castle.Facilities.WcfIntegration.Service
 {
 	using System;
 	using System.Linq;
-	using System.Collections.Generic;
 
 	using Castle.Facilities.WcfIntegration.Behaviors;
 	using Castle.Facilities.WcfIntegration.Behaviors.Logging;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.Facilities.WcfIntegration.Service.Discovery;
-
-	public abstract class WcfServiceModelBase : IWcfServiceModel
-	{
-		private ICollection<Uri> baseAddresses;
-		private ICollection<IWcfEndpoint> endpoints;
-		private ICollection<IWcfExtension> extensions;
-
-		public ICollection<Uri> BaseAddresses
-		{
-			get
-			{
-				if (baseAddresses == null)
-				{
-					baseAddresses = new List<Uri>();
-				}
-				return baseAddresses;
-			}
-			set { baseAddresses = value; }
-		}
-
-		public ICollection<IWcfEndpoint> Endpoints
-		{
-			get
-			{
-				if (endpoints == null)
-				{
-					endpoints = new List<IWcfEndpoint>();
-				}
-				return endpoints;
-			}
-			set { endpoints = value; }
-		}
-
-		public ICollection<IWcfExtension> Extensions
-		{
-			get
-			{
-				if (extensions == null)
-				{
-					extensions = new List<IWcfExtension>();
-				}
-				return extensions;
-			}
-		}
-
-		public bool IsHosted { get; protected set; }
-
-		public bool? ShouldOpenEagerly { get; protected set; }
-	}
 
 	public abstract class WcfServiceModel<T> : WcfServiceModelBase
 		where T : WcfServiceModel<T>
@@ -188,16 +139,16 @@ namespace Castle.Facilities.WcfIntegration.Service
 			return AddExtensions(typeof(LogMessageEndpointBehavior));
 		}
 
-		public T LogMessages<F>()
-			where F : IFormatProvider, new()
+		public T LogMessages<TFormatProvider>()
+			where TFormatProvider : IFormatProvider, new()
 		{
-			return LogMessages<F>(null);
+			return LogMessages<TFormatProvider>(null);
 		}
 
-		public T LogMessages<F>(string format)
-			where F : IFormatProvider, new()
+		public T LogMessages<TFormatProvider>(string format)
+			where TFormatProvider : IFormatProvider, new()
 		{
-			return LogMessages(new F(), format);
+			return LogMessages(new TFormatProvider(), format);
 		}
 
 		public T LogMessages(IFormatProvider formatter)

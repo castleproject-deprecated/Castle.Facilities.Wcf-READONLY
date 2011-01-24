@@ -25,6 +25,7 @@ namespace Castle.Facilities.WcfIntegration.Client
 	using Castle.Core;
 	using Castle.Facilities.WcfIntegration.Client.Proxy;
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
 	using Castle.MicroKernel.ComponentActivator;
 	using Castle.MicroKernel.Context;

@@ -17,6 +17,8 @@ namespace Castle.Facilities.WcfIntegration.Service.Rest
 	using System;
 	using System.ServiceModel.Description;
 
+	using Castle.Facilities.WcfIntegration.Model;
+
 	public class RestServiceModel : WcfServiceModel<RestServiceModel>
 	{
 		public RestServiceModel()

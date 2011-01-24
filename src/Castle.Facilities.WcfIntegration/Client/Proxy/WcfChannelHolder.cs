@@ -23,6 +23,7 @@ namespace Castle.Facilities.WcfIntegration.Client.Proxy
 	using System.ServiceModel.Channels;
 
 	using Castle.Facilities.WcfIntegration.Internal;
+	using Castle.Facilities.WcfIntegration.Model;
 
 	public class WcfChannelHolder : IWcfChannelHolder
 	{

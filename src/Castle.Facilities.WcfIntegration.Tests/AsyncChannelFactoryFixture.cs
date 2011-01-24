@@ -17,8 +17,8 @@ namespace Castle.Facilities.WcfIntegration.Tests
 	using System.ServiceModel;
 
 	using Castle.DynamicProxy;
+	using Castle.Facilities.WcfIntegration.Client;
 	using Castle.Facilities.WcfIntegration.Client.Async;
-	using Castle.Facilities.WcfIntegration.Client.Default;
 
 	using NUnit.Framework;
 
