@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Service
+namespace Castle.Facilities.WcfIntegration
 {
 	using System;
+	using System.ComponentModel;
 	using System.ServiceModel;
 
-	
+	using Castle.Facilities.WcfIntegration.Service;
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class AdHocServiceHostAwareExtensions
 	{
 		public static T OnClosed<T>(this WcfServiceModel<T> serviceModel, Action<ServiceHost> action) where T : WcfServiceModel<T>

@@ -12,12 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Client
+namespace Castle.Facilities.WcfIntegration
 {
 	using System;
+	using System.ComponentModel;
 	using System.ServiceModel;
 	using System.ServiceModel.Channels;
 
+	using Castle.Facilities.WcfIntegration.Client;
+
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class AdHocChannelFactoryAwareExtensions
 	{
 		public static T OnChannelAvailable<T>(this WcfClientModel<T> clientModel, Action<ChannelFactory, IChannel> action) where T : WcfClientModel<T>

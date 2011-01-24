@@ -12,11 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace Castle.Facilities.WcfIntegration.Lifestyles
+namespace Castle.Facilities.WcfIntegration
 {
+	using System.ComponentModel;
+
+	using Castle.Facilities.WcfIntegration.Lifestyles;
 	using Castle.MicroKernel.Registration;
 	using Castle.MicroKernel.Registration.Lifestyle;
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class LifestyleRegistrationExtensions
 	{
 		public static ComponentRegistration<S> PerWcfOperation<S>(this LifestyleGroup<S> @group)

@@ -15,6 +15,7 @@
 namespace Castle.Facilities.WcfIntegration
 {
 	using System.Collections.Generic;
+	using System.ComponentModel;
 	using System.Linq;
 	using System.ServiceModel.Description;
 
@@ -22,6 +23,7 @@ namespace Castle.Facilities.WcfIntegration
 	using Castle.Facilities.WcfIntegration.Service.Default;
 	using Castle.MicroKernel.Registration;
 
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static class WcfIntegrationExtensions
 	{
 #if DOTNET40
