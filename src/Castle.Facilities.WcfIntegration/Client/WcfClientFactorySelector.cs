@@ -15,11 +15,14 @@
 namespace Castle.Facilities.WcfIntegration.Client
 {
 	using System;
-	using System.Collections.Specialized;
+	using System.Collections;
+	using System.Linq;
 	using System.Reflection;
 
 	using Castle.Facilities.TypedFactory;
+	using Castle.Facilities.WcfIntegration.Model;
 	using Castle.MicroKernel;
+	using Castle.MicroKernel.Registration;
 
 	public class WcfClientFactorySelector : ITypedFactoryComponentSelector
 	{
@@ -40,32 +43,57 @@ namespace Castle.Facilities.WcfIntegration.Client
 
 			public override object Resolve(IKernel kernel)
 			{
-				string key = null;
-				var argument = arguments[0];
-
-				if (arguments.Length == 2)
-				{
-					key = (string)argument;
-					argument = arguments[1];
-				}
-				else if (argument is string)
-				{
-					return kernel.Resolve((string)argument, ComponentType);
-				}
-
-				if (argument is Uri)
-				{
-					argument = WcfEndpoint.At((Uri)argument);
-				}
-
-				var args = new HybridDictionary { { Guid.NewGuid().ToString(), argument } };
-
+				var key = GetKey();
+				var args = GetArguments();
 				if (key == null)
 				{
 					return kernel.Resolve(ComponentType, args);
 				}
 
 				return kernel.Resolve(key, ComponentType, args);
+			}
+
+			private IDictionary GetArguments()
+			{
+				if (arguments.Length == 1 && arguments.Single() is string)
+				{
+					// in other words "if we're dealing with this method: T GetClient<T>(string name) where T : class;"
+					return null;
+				}
+				var argument = arguments.Last();
+				if (argument == null)
+				{
+					return null;
+				}
+				var args = new Arguments();
+				if (argument is IWcfClientModel)
+				{
+					args.Insert((IWcfClientModel)argument);
+				}
+				else if (argument is Uri)
+				{
+					args.Insert<IWcfEndpoint>(WcfEndpoint.At((Uri)argument));
+				}
+				else if (argument is IWcfEndpoint)
+				{
+					args.Insert((IWcfEndpoint)argument);
+				}
+				return args;
+			}
+
+			private string GetKey()
+			{
+				string key = null;
+				var argument = arguments[0];
+				if (arguments.Length == 2)
+				{
+					key = (string)argument;
+				}
+				else if (argument is string)
+				{
+					key = (string)argument;
+				}
+				return key;
 			}
 		}
 	}
