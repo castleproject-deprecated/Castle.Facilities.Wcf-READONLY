@@ -43,16 +43,6 @@ limitations under the License.
 
 	</PropertyGroup>
 	
-	<ItemGroup>
-		<!-- 
-		Specify additional items to package here, they are added to the package
-		in addition to automatically detected dependencies.
-		The items are resolved relative to $(OutputPath)
-		-->
-		<PackageFiles Include="$(OutputPath)NHibernate.*" />
-		<PackageFiles Include="$(OutputPath)Iesi.*" />
-	</ItemGroup>
-
 	<Target Name="_InitializeDynamicProperties">
 		<PropertyGroup>
 			<!-- 
