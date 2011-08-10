@@ -64,6 +64,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Services" />
     <Reference Include="System.IdentityModel" />
     <Reference Include="System.Runtime.Serialization">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
@@ -100,6 +101,10 @@
     <Compile Include="IWcfChannelExtension.cs" />
     <Compile Include="IWcfEndpointExtension.cs" />
     <Compile Include="IWcfServiceExtension.cs" />
+    <Compile Include="Service\Data\DataServiceHost.cs" />
+    <Compile Include="Service\Data\DataServiceHostBuilder.cs" />
+    <Compile Include="Service\Data\DataServiceHostFactory.cs" />
+    <Compile Include="Service\Data\DataServiceModel.cs" />
     <Compile Include="Service\Discovery\AdHocServiceCatalogDiscovery.cs" />
     <Compile Include="Service\Discovery\InMemoryServiceCatalog.cs" />
     <Compile Include="Service\Discovery\IServiceCatalog.cs" />
