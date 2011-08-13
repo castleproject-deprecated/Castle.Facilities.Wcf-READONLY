@@ -2493,6 +2493,20 @@
               Depending on the scope implementation it may or may not provide its own end of lifetime detection mechanism.</param>
             <returns></returns>
         </member>
+        <member name="M:Castle.MicroKernel.ModelBuilder.IComponentModelDescriptor.BuildComponentModel(Castle.MicroKernel.IKernel,Castle.Core.ComponentModel)">
+            <summary>
+              Contribute to component model before standard <see cref="T:Castle.MicroKernel.ModelBuilder.IContributeComponentModelConstruction"/> run.
+            </summary>
+            <param name="kernel"></param>
+            <param name="model"></param>
+        </member>
+        <member name="M:Castle.MicroKernel.ModelBuilder.IComponentModelDescriptor.ConfigureComponentModel(Castle.MicroKernel.IKernel,Castle.Core.ComponentModel)">
+            <summary>
+              Contribute to component model after standard <see cref="T:Castle.MicroKernel.ModelBuilder.IContributeComponentModelConstruction"/> run.
+            </summary>
+            <param name="kernel"></param>
+            <param name="model"></param>
+        </member>
         <member name="T:Castle.MicroKernel.Registration.Classes">
             <summary>
               Entry point to fluent way to register, by convention, multiple concrete (non-abstract) classes (that include also delegate types). Use static methods on the class to fluently build registration.
@@ -2704,20 +2718,6 @@
               Gets the contributors.
             </summary>
             <value>The contributors.</value>
-        </member>
-        <member name="M:Castle.MicroKernel.ModelBuilder.IComponentModelDescriptor.BuildComponentModel(Castle.MicroKernel.IKernel,Castle.Core.ComponentModel)">
-            <summary>
-              Contribute to component model before standard <see cref="T:Castle.MicroKernel.ModelBuilder.IContributeComponentModelConstruction"/> run.
-            </summary>
-            <param name="kernel"></param>
-            <param name="model"></param>
-        </member>
-        <member name="M:Castle.MicroKernel.ModelBuilder.IComponentModelDescriptor.ConfigureComponentModel(Castle.MicroKernel.IKernel,Castle.Core.ComponentModel)">
-            <summary>
-              Contribute to component model after standard <see cref="T:Castle.MicroKernel.ModelBuilder.IContributeComponentModelConstruction"/> run.
-            </summary>
-            <param name="kernel"></param>
-            <param name="model"></param>
         </member>
         <member name="T:Castle.MicroKernel.ModelBuilder.Inspectors.ComponentActivatorInspector">
             <summary>
@@ -4361,6 +4361,13 @@
               When specified for multiple components for any given service the one registered after will override the one selected before.
               This does not affect order of resolution via <see cref="M:Castle.MicroKernel.IKernel.ResolveAll``1"/> methods.
             </remarks>
+        </member>
+        <member name="M:Castle.MicroKernel.Registration.ComponentRegistration`1.Properties(System.Predicate{System.Reflection.PropertyInfo})">
+            <summary>
+            Filters properties on the implementation that will be considered 'settable' by the container.
+            </summary>
+            <param name="filter">Predicate deciding whether a property is settable or not. If returns <c>false</c> container will ignore the property, otherwise property will be ignored.</param>
+            <returns></returns>
         </member>
         <member name="P:Castle.MicroKernel.Registration.ComponentRegistration`1.Implementation">
             <summary>
