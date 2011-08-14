@@ -76,7 +76,7 @@
               <seealso cref="T:Castle.MicroKernel.ComponentActivator.DefaultComponentActivator"/>
             </remarks>
         </member>
-        <member name="M:Castle.MicroKernel.IComponentActivator.Create(Castle.MicroKernel.Context.CreationContext)">
+        <member name="M:Castle.MicroKernel.IComponentActivator.Create(Castle.MicroKernel.Context.CreationContext,Castle.MicroKernel.Burden)">
             <summary>
               Should return a new component instance.
             </summary>
